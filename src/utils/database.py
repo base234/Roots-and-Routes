@@ -114,13 +114,15 @@ def get_heritage_sites(filters: Optional[Dict] = None) -> List[Dict]:
     if filters:
         if 'search_query' in filters:
             query += """ AND (
-                LOWER(h.name) LIKE LOWER(%s) OR
-                LOWER(h.description) LIKE LOWER(%s) OR
-                LOWER(h.location) LIKE LOWER(%s) OR
-                LOWER(h.city) LIKE LOWER(%s)
+                CONTAINS(LOWER(h.name), LOWER(%s)) OR
+                CONTAINS(LOWER(h.description), LOWER(%s)) OR
+                CONTAINS(LOWER(h.location), LOWER(%s)) OR
+                CONTAINS(LOWER(h.city), LOWER(%s)) OR
+                SOUNDEX(h.name) = SOUNDEX(%s) OR
+                SOUNDEX(h.location) = SOUNDEX(%s)
             )"""
-            search_term = f"%{filters['search_query']}%"
-            params.extend([search_term, search_term, search_term, search_term])
+            search_term = filters['search_query']
+            params.extend([search_term, search_term, search_term, search_term, search_term, search_term])
         if 'type' in filters:
             placeholders = ','.join(['%s'] * len(filters['type']))
             query += f" AND h.heritage_type IN ({placeholders})"
@@ -551,19 +553,49 @@ def get_visitor_trends() -> List[Dict]:
 
     return trends
 
-def get_art_forms(site_id: str) -> List[Dict]:
-    """Fetch art forms associated with a heritage site."""
+def get_art_forms(filters: Optional[Dict] = None) -> List[Dict]:
+    """Fetch art forms with optional filters."""
     query = """
     SELECT
         a.art_form_id,
         a.name,
         a.description,
-        a.risk_level
+        a.origin_state,
+        a.category,
+        a.risk_level,
+        a.practitioners_count
     FROM ART_FORMS a
-    JOIN SITE_ART_FORMS sa ON a.art_form_id = sa.art_form_id
-    WHERE sa.site_id = %s
+    WHERE 1=1
     """
-    result = execute_query(query, [site_id])
+    params = []
+
+    if filters:
+        if 'search_query' in filters:
+            query += """ AND (
+                CONTAINS(LOWER(a.name), LOWER(%s)) OR
+                CONTAINS(LOWER(a.description), LOWER(%s)) OR
+                SOUNDEX(a.name) = SOUNDEX(%s) OR
+                SOUNDEX(a.origin_state) = SOUNDEX(%s)
+            )"""
+            search_term = filters['search_query']
+            params.extend([search_term, search_term, search_term, search_term])
+        if 'category' in filters:
+            query += " AND a.category = %s"
+            params.append(filters['category'])
+        if 'origin_state' in filters:
+            query += " AND a.origin_state = %s"
+            params.append(filters['origin_state'])
+        if 'risk_level' in filters:
+            query += " AND a.risk_level = %s"
+            params.append(filters['risk_level'])
+
+    query += """
+    ORDER BY a.name
+    LIMIT %s
+    """
+    params.append(DISCOVERY_CONFIG['search_limit'])
+
+    result = execute_query(query, params)
     if result is None:
         return []
 
@@ -573,14 +605,17 @@ def get_art_forms(site_id: str) -> List[Dict]:
             'art_form_id': row[0],
             'name': row[1],
             'description': row[2],
-            'risk_level': row[3]
+            'origin_state': row[3],
+            'category': row[4],
+            'risk_level': row[5],
+            'practitioners_count': row[6]
         }
         art_forms.append(art_form)
 
     return art_forms
 
-def get_cultural_events(site_id: str) -> List[Dict]:
-    """Fetch cultural events associated with a heritage site."""
+def get_cultural_events(filters: Optional[Dict] = None) -> List[Dict]:
+    """Fetch cultural events with optional filters."""
     query = """
     SELECT
         e.event_id,
@@ -588,12 +623,43 @@ def get_cultural_events(site_id: str) -> List[Dict]:
         e.description,
         e.start_date,
         e.end_date,
+        e.location,
+        e.event_type,
         e.organizer
     FROM CULTURAL_EVENTS e
-    WHERE e.site_id = %s
-    ORDER BY e.start_date DESC
+    WHERE 1=1
     """
-    result = execute_query(query, [site_id])
+    params = []
+
+    if filters:
+        if 'search_query' in filters:
+            query += """ AND (
+                CONTAINS(LOWER(e.name), LOWER(%s)) OR
+                CONTAINS(LOWER(e.description), LOWER(%s)) OR
+                CONTAINS(LOWER(e.location), LOWER(%s)) OR
+                SOUNDEX(e.name) = SOUNDEX(%s) OR
+                SOUNDEX(e.location) = SOUNDEX(%s) OR
+                SOUNDEX(e.organizer) = SOUNDEX(%s)
+            )"""
+            search_term = filters['search_query']
+            params.extend([search_term, search_term, search_term, search_term, search_term, search_term])
+        if 'event_type' in filters:
+            query += " AND e.event_type = %s"
+            params.append(filters['event_type'])
+        if 'location' in filters:
+            query += " AND e.location = %s"
+            params.append(filters['location'])
+        if 'organizer' in filters:
+            query += " AND e.organizer = %s"
+            params.append(filters['organizer'])
+
+    query += """
+    ORDER BY e.start_date DESC
+    LIMIT %s
+    """
+    params.append(DISCOVERY_CONFIG['search_limit'])
+
+    result = execute_query(query, params)
     if result is None:
         return []
 
@@ -605,7 +671,9 @@ def get_cultural_events(site_id: str) -> List[Dict]:
             'description': row[2],
             'start_date': row[3],
             'end_date': row[4],
-            'organizer': row[5]
+            'location': row[5],
+            'event_type': row[6],
+            'organizer': row[7]
         }
         events.append(event)
 
