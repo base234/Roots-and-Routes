@@ -127,43 +127,7 @@ def render_site_details():
                             title='Daily Revenue')
         st.plotly_chart(fig_revenue, use_container_width=True)
 
-    # Sixth row: Site Health
-    st.header("Site Health")
-    try:
-        health_query = """
-        SELECT * FROM SITE_HEALTH
-        WHERE site_id = %s
-        ORDER BY VISIT_DATE DESC
-        """
-        health_metrics = execute_query(health_query, (site['id'],))
-
-        if health_metrics:
-            df_health = pd.DataFrame(health_metrics, columns=[
-                'id', 'site_id', 'visit_date', 'health_index', 'structural_integrity',
-                'conservation_status', 'environmental_impact', 'created_at', 'updated_at'
-            ])
-            df_health['visit_date'] = pd.to_datetime(df_health['visit_date'])
-
-            # Health index trend
-            fig_health = px.line(df_health, x='visit_date', y='health_index',
-                               title='Site Health Index Trend')
-            st.plotly_chart(fig_health, use_container_width=True)
-
-            # Display latest health metrics
-            latest_health = df_health.iloc[0]
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("Structural Integrity", f"{latest_health['structural_integrity']}%")
-            with col2:
-                st.metric("Conservation Status", f"{latest_health['conservation_status']}%")
-            with col3:
-                st.metric("Environmental Impact", f"{latest_health['environmental_impact']}%")
-        else:
-            st.info("No health metrics available for this site.")
-    except Exception as e:
-        st.info("Health metrics feature is not available at the moment.")
-
-    # Seventh row: Visitor Reviews and Interactions
+    # Sixth row: Visitor Reviews and Interactions
     st.header("Visitor Reviews & Interactions")
     try:
         # Get user interactions
