@@ -21,118 +21,119 @@ def render_search_bar():
         label_visibility="collapsed"
     )
 
-    # Advanced filters
-    use_advanced_filters = st.checkbox("Use Advanced Filters", value=False)
+    # Advanced filters - only show for specific search types
+    if search_type in ["Heritage Sites", "Art Forms", "Cultural Events"]:
+        use_advanced_filters = st.checkbox("Use Advanced Filters", value=False)
 
-    if use_advanced_filters:
-        if search_type in ["All", "Heritage Sites"]:
-            col1, col2, col3, col4 = st.columns(4)
+        if use_advanced_filters:
+            if search_type == "Heritage Sites":
+                col1, col2, col3, col4 = st.columns(4)
 
-            with st.container():
-                with col1:
-                    state = st.selectbox(
-                        "State",
-                        ["None", "Maharashtra", "Karnataka", "Tamil Nadu", "Rajasthan", "Uttar Pradesh",
-                         "Madhya Pradesh", "Odisha", "Delhi", "Gujarat", "Telangana", "West Bengal", "Assam"],
-                        index=0
-                    )
+                with st.container():
+                    with col1:
+                        state = st.selectbox(
+                            "State",
+                            ["None", "Maharashtra", "Karnataka", "Tamil Nadu", "Rajasthan", "Uttar Pradesh",
+                             "Madhya Pradesh", "Odisha", "Delhi", "Gujarat", "Telangana", "West Bengal", "Assam"],
+                            index=0
+                        )
 
-                with col2:
-                    heritage_type = st.selectbox(
-                        "Heritage Type",
-                        ["None", "Monument", "Temple", "Ruins", "Cave", "Fort", "Palace", "Bridge",
-                         "Road", "Observatory", "Forest", "Park"],
-                        index=0
-                    )
+                    with col2:
+                        heritage_type = st.selectbox(
+                            "Heritage Type",
+                            ["None", "Monument", "Temple", "Ruins", "Cave", "Fort", "Palace", "Bridge",
+                             "Road", "Observatory", "Forest", "Park"],
+                            index=0
+                        )
 
-                with col3:
-                    conservation_status = st.selectbox(
-                        "Conservation Status",
-                        ["None", "Low", "Medium", "High"],
-                        index=0
-                    )
+                    with col3:
+                        conservation_status = st.selectbox(
+                            "Conservation Status",
+                            ["None", "Low", "Medium", "High"],
+                            index=0
+                        )
 
-                with col4:
-                    risk_level = st.selectbox(
-                        "Risk Level",
-                        ["None", "Low", "Medium", "High"],
-                        index=0
-                    )
+                    with col4:
+                        risk_level = st.selectbox(
+                            "Risk Level",
+                            ["None", "Low", "Medium", "High"],
+                            index=0
+                        )
 
-            col1, col2 = st.columns(2)
+                col1, col2 = st.columns(2)
 
-            with st.container():
-                with col1:
-                    st.markdown("Year Range")
+                with st.container():
+                    with col1:
+                        st.markdown("Year Range")
 
-            col1, col2, col3, col4 = st.columns(4)
-            with st.container():
-                with col1:
-                    from_year = st.number_input("From", min_value=200, max_value=2025, value=200, step=1, label_visibility="collapsed")
-                with col2:
-                    to_year = st.number_input("To", min_value=1000, max_value=2025, value=2025, step=1, label_visibility="collapsed")
+                col1, col2, col3, col4 = st.columns(4)
+                with st.container():
+                    with col1:
+                        from_year = st.number_input("From", min_value=200, max_value=2025, value=200, step=1, label_visibility="collapsed")
+                    with col2:
+                        to_year = st.number_input("To", min_value=1000, max_value=2025, value=2025, step=1, label_visibility="collapsed")
 
-            # UNESCO checkboxes in a new line
-            st.markdown('<div class="unesco-checkboxes">', unsafe_allow_html=True)
-            unesco = st.checkbox("UNESCO", value=False)
-            non_unesco = st.checkbox("Non-UNESCO", value=False)
-            st.markdown('</div>', unsafe_allow_html=True)
+                # UNESCO checkboxes in a new line
+                st.markdown('<div class="unesco-checkboxes">', unsafe_allow_html=True)
+                unesco = st.checkbox("UNESCO", value=False)
+                non_unesco = st.checkbox("Non-UNESCO", value=False)
+                st.markdown('</div>', unsafe_allow_html=True)
 
-        elif search_type == "Art Forms":
-            col1, col2, col3 = st.columns(3)
+            elif search_type == "Art Forms":
+                col1, col2, col3 = st.columns(3)
 
-            with st.container():
-                with col1:
-                    art_category = st.selectbox(
-                        "Category",
-                        ["None", "Dance", "Painting", "Textile", "Theatre", "Ritual"],
-                        index=0
-                    )
+                with st.container():
+                    with col1:
+                        art_category = st.selectbox(
+                            "Category",
+                            ["None", "Dance", "Painting", "Textile", "Theatre", "Ritual"],
+                            index=0
+                        )
 
-                with col2:
-                    origin_state = st.selectbox(
-                        "Origin State",
-                        ["None", "Kerala", "Uttar Pradesh", "Tamil Nadu", "Andhra Pradesh", "Odisha",
-                         "Manipur", "Assam", "Bihar", "West Bengal", "Maharashtra", "Punjab",
-                         "Madhya Pradesh", "Gujarat", "Karnataka", "Rajasthan"],
-                        index=0
-                    )
+                    with col2:
+                        origin_state = st.selectbox(
+                            "Origin State",
+                            ["None", "Kerala", "Uttar Pradesh", "Tamil Nadu", "Andhra Pradesh", "Odisha",
+                             "Manipur", "Assam", "Bihar", "West Bengal", "Maharashtra", "Punjab",
+                             "Madhya Pradesh", "Gujarat", "Karnataka", "Rajasthan"],
+                            index=0
+                        )
 
-                with col3:
-                    risk_level = st.selectbox(
-                        "Risk Level",
-                        ["None", "Low", "Medium", "High"],
-                        index=0
-                    )
+                    with col3:
+                        risk_level = st.selectbox(
+                            "Risk Level",
+                            ["None", "Low", "Medium", "High"],
+                            index=0
+                        )
 
-        elif search_type == "Cultural Events":
-            col1, col2, col3 = st.columns(3)
+            elif search_type == "Cultural Events":
+                col1, col2, col3 = st.columns(3)
 
-            with st.container():
-                with col1:
-                    event_type = st.selectbox(
-                        "Event Type",
-                        ["None", "Dance Festival", "Music Festival", "Cultural Festival", "Eco Festival", "Wildlife Festival"],
-                        index=0
-                    )
+                with st.container():
+                    with col1:
+                        event_type = st.selectbox(
+                            "Event Type",
+                            ["None", "Dance Festival", "Music Festival", "Cultural Festival", "Eco Festival", "Wildlife Festival"],
+                            index=0
+                        )
 
-                with col2:
-                    location = st.selectbox(
-                        "Location",
-                        ["None", "Khajuraho", "Konark", "Aurangabad", "Mahabalipuram", "Pattadakal",
-                         "Delhi", "Mumbai", "Hampi", "Agra", "Sanchi", "Fatehpur Sikri", "Thanjavur",
-                         "Champaner", "Patan", "Mysore", "Madurai", "Guwahati", "Sundarbans", "Kaziranga"],
-                        index=0
-                    )
+                    with col2:
+                        location = st.selectbox(
+                            "Location",
+                            ["None", "Khajuraho", "Konark", "Aurangabad", "Mahabalipuram", "Pattadakal",
+                             "Delhi", "Mumbai", "Hampi", "Agra", "Sanchi", "Fatehpur Sikri", "Thanjavur",
+                             "Champaner", "Patan", "Mysore", "Madurai", "Guwahati", "Sundarbans", "Kaziranga"],
+                            index=0
+                        )
 
-                with col3:
-                    organizer = st.selectbox(
-                        "Organizer",
-                        ["None", "MP Tourism", "Odisha Tourism", "Maharashtra Tourism", "Tamil Nadu Tourism",
-                         "Karnataka Tourism", "Delhi Tourism", "UP Tourism", "Gujarat Tourism", "Assam Tourism",
-                         "West Bengal Tourism"],
-                        index=0
-                    )
+                    with col3:
+                        organizer = st.selectbox(
+                            "Organizer",
+                            ["None", "MP Tourism", "Odisha Tourism", "Maharashtra Tourism", "Tamil Nadu Tourism",
+                             "Karnataka Tourism", "Delhi Tourism", "UP Tourism", "Gujarat Tourism", "Assam Tourism",
+                             "West Bengal Tourism"],
+                            index=0
+                        )
 
     # Search button
     search_clicked = st.button("Search", key="search_button")
@@ -147,8 +148,8 @@ def render_search_bar():
             st.success(f"Searching for: {search_query}")
 
         # Add advanced filters if enabled and selected
-        if use_advanced_filters:
-            if search_type in ["All", "Heritage Sites"]:
+        if search_type in ["Heritage Sites", "Art Forms", "Cultural Events"] and use_advanced_filters:
+            if search_type == "Heritage Sites":
                 if state != "None":
                     filters['state'] = state
                 if heritage_type != "None":
