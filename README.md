@@ -5,7 +5,16 @@ A comprehensive platform that bridges art, culture, and tourism with technology,
 ## Activate virtual environment
 ```
 python -m venv venv
-source venv/bin/activate  # On Windows: .\venv\Scripts\activate.bat
+```
+
+### For Linux systems
+```
+source venv/bin/activate
+```
+
+### For Windows systems
+```
+.\venv\Scripts\activate.bat
 ```
 
 ## Install dependencies
