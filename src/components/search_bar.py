@@ -134,17 +134,8 @@ def render_search_bar():
                         index=0
                     )
 
-    # Search and Reset buttons
-    col1, col2 = st.columns([1, 4])
-    with col1:
-        search_clicked = st.button("Search", key="search_button")
-    with col2:
-        reset_clicked = st.button("Reset", key="reset_button")
-
-    if reset_clicked:
-        st.session_state.main_search = ""
-        st.session_state.search_type = "All"
-        st.experimental_rerun()
+    # Search button
+    search_clicked = st.button("Search", key="search_button")
 
     if search_clicked:
         # Prepare filters dictionary
