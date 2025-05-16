@@ -554,9 +554,9 @@ def get_visitor_trends() -> List[Dict]:
     return trends
 
 def get_art_forms(filters: Optional[Dict] = None) -> List[Dict]:
-    """Fetch art forms with optional filters."""
+    """Fetch art forms with optional filters or by site ID."""
     query = """
-    SELECT
+    SELECT DISTINCT
         a.art_form_id,
         a.name,
         a.description,
@@ -565,11 +565,17 @@ def get_art_forms(filters: Optional[Dict] = None) -> List[Dict]:
         a.risk_level,
         a.practitioners_count
     FROM ART_FORMS a
+    LEFT JOIN SITE_ART_FORMS saf ON a.art_form_id = saf.art_form_id
     WHERE 1=1
     """
     params = []
 
-    if filters:
+    # Handle case when filters is a site ID (integer)
+    if isinstance(filters, int):
+        query += " AND saf.site_id = %s"
+        params.append(filters)
+    # Handle case when filters is a dictionary
+    elif isinstance(filters, dict):
         if 'search_query' in filters:
             query += """ AND (
                 CONTAINS(LOWER(a.name), LOWER(%s)) OR
