@@ -55,7 +55,8 @@ class DataLoader:
 
             # Convert to DataFrame and load
             df = pd.DataFrame(stats_data)
-            return self.sf.write_dataframe(df, 'visitor_statistics')
+            df.columns = [col.upper() for col in df.columns]
+            return self.sf.write_dataframe(df, 'VISITOR_STATS')
         except Exception as e:
             print(f"Error generating visitor statistics: {str(e)}")
             return False

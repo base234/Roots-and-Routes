@@ -3,76 +3,7 @@ from src.utils.config import DISCOVERY_CONFIG
 from src.utils.database import get_heritage_sites
 
 def render_search_bar():
-    """Render the search bar with improved UI and functionality."""
-    st.markdown("""
-        <style>
-        .search-title {
-            color: #1E88E5;
-            font-size: 1.8rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            text-align: center;
-        }
-        .search-subtitle {
-            color: #666;
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-        .stTextInput>div>div>input {
-            border-radius: 25px;
-            padding: 0.8rem 1.5rem;
-            border: 2px solid #e0e0e0;
-            transition: all 0.3s ease;
-        }
-        .stTextInput>div>div>input:focus {
-            border-color: #1E88E5;
-            box-shadow: 0 0 0 1px #1E88E5;
-        }
-        .filter-title {
-            color: #333;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-        .search-results {
-            margin-top: 2rem;
-        }
-        .result-card {
-            background: white;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            border: 1px solid #e0e0e0;
-        }
-        .result-title {
-            color: #1E88E5;
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-        .result-details {
-            color: #666;
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
-        }
-        .unesco-checkboxes {
-            margin-top: 0.5rem;
-            display: flex;
-            gap: 1rem;
-        }
-        .year-range {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            margin-top: 0.5rem;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
-    st.markdown('<h2 class="search-title">Discover Heritage Sites</h2>', unsafe_allow_html=True)
-    st.markdown('<p class="search-subtitle">Search for heritage sites, explore cultural landmarks, and plan your next visit</p>', unsafe_allow_html=True)
+    st.markdown('<p class="search-subtitle">Search and plan your next visit</p>', unsafe_allow_html=True)
 
     # Search input
     search_query = st.text_input(

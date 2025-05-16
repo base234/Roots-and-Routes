@@ -528,15 +528,13 @@ def get_visitor_trends() -> List[Dict]:
     """Fetch visitor trends for heritage sites."""
     query = """
     SELECT
-        h.name,
-        v.visit_date,
+        DATE_TRUNC('month', v.visit_date) as month,
         SUM(v.visitor_count) as total_visitors,
         SUM(v.revenue) as total_revenue
-    FROM HERITAGE_SITES h
-    LEFT JOIN VISITOR_STATS v ON h.site_id = v.site_id
-    GROUP BY h.name, v.visit_date
-    ORDER BY v.visit_date DESC
-    LIMIT 30
+    FROM VISITOR_STATS v
+    WHERE v.visit_date >= DATEADD(month, -12, CURRENT_DATE())
+    GROUP BY month
+    ORDER BY month ASC
     """
     result = execute_query(query)
     if result is None:
@@ -545,10 +543,9 @@ def get_visitor_trends() -> List[Dict]:
     trends = []
     for row in result:
         trend = {
-            'name': row[0],
-            'visit_date': row[1],
-            'total_visitors': row[2],
-            'total_revenue': row[3]
+            'month': row[0],
+            'total_visitors': row[1] or 0,
+            'total_revenue': row[2] or 0
         }
         trends.append(trend)
 

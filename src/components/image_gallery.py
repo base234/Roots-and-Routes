@@ -1,10 +1,14 @@
 import streamlit as st
 from unsplash.api import Api
 from unsplash.auth import Auth
-from src.utils.config import UNSPLASH_ACCESS_KEY
+from src.utils.config import UNSPLASH_ACCESS_KEY, UNSPLASH_SECRET_KEY, UNSPLASH_REDIRECT_URI
 
 # Initialize Unsplash API
-auth = Auth(UNSPLASH_ACCESS_KEY)
+auth = Auth(
+    client_id=UNSPLASH_ACCESS_KEY,
+    client_secret=UNSPLASH_SECRET_KEY,
+    redirect_uri=UNSPLASH_REDIRECT_URI
+)
 api = Api(auth)
 
 def fetch_unsplash_images(query, count=9):
@@ -16,20 +20,24 @@ def fetch_unsplash_images(query, count=9):
         st.error(f"Failed to fetch images from Unsplash: {e}")
         return []
 
-def render_image_gallery(image_urls=None, query=None, count=9):
-    """Render a grid of images using Streamlit. If image_urls is not provided, fetch images from Unsplash."""
-    if image_urls is None:
-        if query is None:
-            st.error("Please provide either image_urls or a query for Unsplash.")
-            return
-        image_urls = fetch_unsplash_images(query, count)
+def render_image_gallery(site_name, count=5):
+    """Render a gallery of images for a heritage site."""
+    try:
+        # Search for images related to the site
+        photos = api.search_photos(site_name, per_page=count)
 
-    if not image_urls:
-        st.info("No images available.")
-        return
+        if photos:
+            # Create columns for the gallery
+            cols = st.columns(count)
 
-    # Display images in a 3-column grid
-    cols = st.columns(3)
-    for idx, url in enumerate(image_urls):
-        with cols[idx % 3]:
-            st.image(url, use_column_width=True)
+            # Display images in columns
+            for idx, photo in enumerate(photos):
+                with cols[idx]:
+                    st.image(photo.urls.regular, use_container_width=True)
+                    st.caption(f"Photo by {photo.user.name} on Unsplash")
+        else:
+            st.info("No images found for this site.")
+
+    except Exception as e:
+        st.error(f"Error loading images: {str(e)}")
+        return None

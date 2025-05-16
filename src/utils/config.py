@@ -14,16 +14,22 @@ SNOWFLAKE_CONFIG = {
     'schema': os.getenv('SNOWFLAKE_SCHEMA', '')
 }
 
+# OpenAI API configuration
+OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-3.5-turbo')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', 'your_openai_api_key_here')
+
 # Google Maps API configuration
 GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY', '')
 
 # Unsplash API configuration
-UNSPLASH_ACCESS_KEY = os.getenv('UNSPLASH_ACCESS_KEY', '')
+UNSPLASH_ACCESS_KEY = os.getenv('UNSPLASH_ACCESS_KEY', 'your_access_key_here')
+UNSPLASH_SECRET_KEY = os.getenv('UNSPLASH_SECRET_KEY', 'your_secret_key_here')
+UNSPLASH_REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"  # Default redirect URI for desktop apps
 
 # Application Settings
 APP_CONFIG = {
     'title': 'Roots & Routes',
-    'description': 'Exploring cultural roots through tourism routes',
+    'description': 'Discover and explore cultural heritage sites',
     'theme': {
         'primaryColor': '#1E88E5',
         'backgroundColor': '#FFFFFF',

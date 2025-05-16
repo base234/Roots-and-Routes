@@ -1,4 +1,5 @@
 import streamlit as st
+from src.components.dashboard import render_dashboard
 from src.components.header import render_header
 from src.components.footer import render_footer
 from src.components.search_bar import render_search_bar
@@ -6,50 +7,55 @@ from src.components.featured_content import render_featured_content
 from src.components.recommendations import render_recommendations
 from src.components.trending import render_trending
 from src.utils.database import get_db_connection
+from src.utils.config import APP_CONFIG
+
+# Load views
+from src.views.metrics_overview import render_metrics_overview
+from src.views.site_details import render_site_details
 
 # Set page configuration
 st.set_page_config(
-    page_title="Roots and Routes",
+    page_title=APP_CONFIG["title"],
     page_icon="🏛️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # Sidebar content (full length, options below heading)
-st.sidebar.title("Roots and Routes")
+st.sidebar.title(APP_CONFIG["title"])
 
 # Database Connection Status
 conn = get_db_connection()
 if conn is not None:
     st.sidebar.markdown(
-        '<div style="background-color:#e8f5e9;padding:10px;border-radius:6px;margin-bottom:10px;">'
-        '<span style="color:#388e3c;font-weight:bold;">🟢 Database Connected</span>'
+        '<div style="background-color:#e8f5e9;padding:2px 0;border-radius:6px;margin-bottom:10px;">'
+        '<span style="color:#388e3c;font-size:14px;">🟢 DB Status: Connected</span>'
         '</div>',
         unsafe_allow_html=True
     )
 else:
     st.sidebar.markdown(
-        '<div style="background-color:#ffebee;padding:10px;border-radius:6px;margin-bottom:10px;">'
-        '<span style="color:#c62828;font-weight:bold;">🔴 Database Disconnected</span>'
+        '<div style="background-color:#ffebee;padding:2px 0;border-radius:6px;margin-bottom:10px;">'
+        '<span style="color:#c62828;font-size:14px;">🔴 DB Status: Disconnected</span>'
         '</div>',
         unsafe_allow_html=True
     )
 
-# Use session state to track the current page
-if 'sidebar_page' not in st.session_state:
-    st.session_state['sidebar_page'] = 'Home'
+# Initialize session state for navigation
+if 'current_view' not in st.session_state:
+    st.session_state['current_view'] = 'home'
 
+# Navigation buttons in sidebar
 if st.sidebar.button("Home", key="home_button"):
-    st.session_state['sidebar_page'] = 'Home'
-if st.sidebar.button("Featured Destinations", key="featured_button"):
-    st.session_state['sidebar_page'] = 'Featured Destinations'
-if st.sidebar.button("Trending Now", key="trending_button"):
-    st.session_state['sidebar_page'] = 'Trending Now'
-if st.sidebar.button("Recommended for You", key="recommended_button"):
-    st.session_state['sidebar_page'] = 'Recommended for You'
+    st.session_state['current_view'] = 'home'
+if st.sidebar.button("Metrics Overview", key="metrics_overview_button"):
+    st.session_state['current_view'] = 'metrics_overview'
+if st.sidebar.button("Discover", key="discover_button"):
+    st.session_state['current_view'] = 'discover'
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("Built with ❤️ for Cultural Heritage")
+
 st.sidebar.markdown("""
     <div class="footer-links">
         <a href="#">About</a>
@@ -61,34 +67,24 @@ st.sidebar.markdown("""
         </div>
     """, unsafe_allow_html=True)
 
-# Render content based on sidebar selection
-print("Current Page: " + st.session_state['sidebar_page'])
-# render_header()
+# Render content based on current view
+current_view = st.session_state['current_view']
 
-page = st.session_state['sidebar_page']
-
-if page == "Home":
-    st.markdown("""
-        <div style='text-align: center; padding: 2rem 0;'>
-            <h1 style='font-size: 3.5rem; margin-bottom: 1rem;'>Discover World Heritage</h1>
-            <p style='font-size: 1.2rem; color: #666;'>Explore UNESCO World Heritage Sites and Cultural Treasures</p>
-        </div>
-    """, unsafe_allow_html=True)
+if current_view == 'home':
+    st.markdown("#### Roots and Routes")
+    st.markdown("## Trending Now")
+    render_trending()
+elif current_view == 'metrics_overview':
+    st.markdown("#### Roots and Routes")
+    st.markdown("## Metrics Overview")
+    render_metrics_overview()
+elif current_view == 'discover':
+    st.markdown("#### Roots and Routes")
+    st.markdown("## Discover World Heritage")
+    st.markdown("<p style='font-size: 1.2rem; color: #666;'>Explore UNESCO World Heritage Sites and Cultural Treasures</p>", unsafe_allow_html=True)
+    st.markdown("---")
     render_search_bar()
-    st.markdown("## Featured Destinations")
-    render_featured_content()
-    st.markdown("## Trending Now")
-    render_trending()
-    st.markdown("## Recommended for You")
-    render_recommendations()
-elif page == "Featured Destinations":
-    st.markdown("## Featured Destinations")
-    render_featured_content()
-elif page == "Trending Now":
-    st.markdown("## Trending Now")
-    render_trending()
-elif page == "Recommended for You":
-    st.markdown("## Recommended for You")
-    render_recommendations()
+elif current_view == 'site_details':
+    render_site_details()
 
 render_footer()

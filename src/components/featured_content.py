@@ -45,9 +45,6 @@ def render_featured_content():
         </style>
     """, unsafe_allow_html=True)
 
-    st.markdown('<div class="featured-content">', unsafe_allow_html=True)
-    st.markdown('<h2 class="featured-title">Featured Destinations</h2>', unsafe_allow_html=True)
-
     col1, col2, col3 = st.columns(3)
 
     with col1:
@@ -82,5 +79,3 @@ def render_featured_content():
                 <p><strong>Location:</strong> Madhya Pradesh</p>
             </div>
         """, unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
