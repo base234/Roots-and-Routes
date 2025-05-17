@@ -3,11 +3,9 @@ from src.utils.config import DISCOVERY_CONFIG
 from src.utils.database import get_heritage_sites, get_art_forms, get_cultural_events
 
 def render_search_bar():
-    st.markdown('<p class="search-subtitle">Search and plan your next visit</p>', unsafe_allow_html=True)
-
     # Search type selection
     search_type = st.radio(
-        "Search Type",
+        "Search and plan your next visit",
         ["All", "Heritage Sites", "Art Forms", "Cultural Events"],
         horizontal=True,
         key="search_type"
