@@ -12,6 +12,7 @@ from src.utils.config import APP_CONFIG
 # Load views
 from src.views.metrics_overview import render_metrics_overview
 from src.views.site_details import render_site_details
+from src.views.tourism_analytics import render_tourism_analytics
 
 # Set page configuration
 st.set_page_config(
@@ -52,6 +53,8 @@ if st.sidebar.button("Metrics Overview", key="metrics_overview_button"):
     st.session_state['current_view'] = 'metrics_overview'
 if st.sidebar.button("Discover", key="discover_button"):
     st.session_state['current_view'] = 'discover'
+if st.sidebar.button("Tourism Analytics", key="tourism_analytics_button"):
+    st.session_state['current_view'] = 'tourism_analytics'
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("Built with ❤️ for Cultural Heritage")
@@ -86,5 +89,9 @@ elif current_view == 'discover':
     render_search_bar()
 elif current_view == 'site_details':
     render_site_details()
+elif current_view == 'tourism_analytics':
+    st.markdown("#### Roots and Routes")
+    st.markdown("## Tourism Analytics")
+    render_tourism_analytics()
 
 render_footer()
