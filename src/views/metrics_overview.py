@@ -4,17 +4,11 @@ from src.utils.dashboard_utils import DashboardUtils
 from src.components.header import render_header
 from src.components.footer import render_footer
 
-def render_dashboard():
-    """Render the main dashboard page."""
-    render_header()
-
-    st.title("Heritage Sites Dashboard")
-
+def render_metrics_overview():
     # Initialize dashboard utilities
     dashboard = DashboardUtils()
 
     # Overview Metrics
-    st.subheader("Overview")
     metrics = dashboard.get_overview_metrics()
     col1, col2, col3, col4 = st.columns(4)
 
@@ -92,7 +86,5 @@ def render_dashboard():
     else:
         st.info("No health index data available at the moment.")
 
-    render_footer()
-
 if __name__ == "__main__":
-    render_dashboard()
+    render_metrics_overview()
