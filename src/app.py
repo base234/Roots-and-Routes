@@ -55,6 +55,8 @@ if st.sidebar.button("Discover", key="discover_button"):
     st.session_state['current_view'] = 'discover'
 if st.sidebar.button("Tourism Analytics", key="tourism_analytics_button"):
     st.session_state['current_view'] = 'tourism_analytics'
+if st.sidebar.button("AI Insights", key="ai_insights_button"):
+    st.session_state['current_view'] = 'ai_insights'
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("Built with ❤️ for Cultural Heritage")
@@ -93,5 +95,8 @@ elif current_view == 'tourism_analytics':
     st.markdown("#### Roots and Routes")
     st.markdown("## Tourism Analytics")
     render_tourism_analytics()
+elif current_view == 'ai_insights':
+    from src.views.ai_insights import render_ai_insights_page
+    render_ai_insights_page()
 
 render_footer()
