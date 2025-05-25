@@ -1,6 +1,4 @@
-# Roots & Routes: Preserving India's Cultural Heritage
-
-## Introduction
+# Roots & Routes
 
 Roots & Routes is an innovative digital platform dedicated to preserving and promoting India's rich cultural heritage. Our mission is to bridge the gap between traditional cultural assets and modern technology, making heritage sites, art forms, and cultural events more accessible and engaging for everyone.
 
