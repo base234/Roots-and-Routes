@@ -1123,3 +1123,40 @@ def get_site_events(site_id: str) -> List[Dict]:
         events.append(event)
 
     return events
+
+def get_all_cultural_events() -> List[Dict]:
+    """Fetch all cultural events."""
+    query = """
+    SELECT
+        event_id,
+        name,
+        description,
+        start_date,
+        end_date,
+        location,
+        event_type,
+        organizer
+    FROM CULTURAL_EVENTS
+    ORDER BY start_date ASC
+    """
+
+    result = execute_query(query)
+    if result is None:
+        return []
+
+    # Convert the result to a list of dictionaries
+    events = []
+    for row in result:
+        event = {
+            'event_id': row[0],
+            'name': row[1],
+            'description': row[2],
+            'start_date': row[3],
+            'end_date': row[4],
+            'location': row[5],
+            'event_type': row[6],
+            'organizer': row[7]
+        }
+        events.append(event)
+
+    return events
