@@ -45,7 +45,46 @@ Roots & Routes is an innovative digital platform dedicated to preserving and pro
 - Heritage type distribution and State wise distribution
 - Trending Heritage Sites
 
+## Screenshots
 
+<table>
+<tr>
+<td><img src="screenshots/01.png" alt="Screenshot 1" width="100%"></td>
+<td><img src="screenshots/02.png" alt="Screenshot 2" width="100%"></td>
+</tr>
+<tr>
+<td><img src="screenshots/03.png" alt="Screenshot 3" width="100%"></td>
+<td><img src="screenshots/04.png" alt="Screenshot 4" width="100%"></td>
+</tr>
+<tr>
+<td><img src="screenshots/05.png" alt="Screenshot 5" width="100%"></td>
+<td><img src="screenshots/06.png" alt="Screenshot 6" width="100%"></td>
+</tr>
+<tr>
+<td><img src="screenshots/07.png" alt="Screenshot 7" width="100%"></td>
+<td><img src="screenshots/08.png" alt="Screenshot 8" width="100%"></td>
+</tr>
+<tr>
+<td><img src="screenshots/09.png" alt="Screenshot 9" width="100%"></td>
+<td><img src="screenshots/10.png" alt="Screenshot 10" width="100%"></td>
+</tr>
+<tr>
+<td><img src="screenshots/11.png" alt="Screenshot 11" width="100%"></td>
+<td><img src="screenshots/12.png" alt="Screenshot 12" width="100%"></td>
+</tr>
+<tr>
+<td><img src="screenshots/13.png" alt="Screenshot 13" width="100%"></td>
+<td><img src="screenshots/14.png" alt="Screenshot 14" width="100%"></td>
+</tr>
+<tr>
+<td><img src="screenshots/15.png" alt="Screenshot 15" width="100%"></td>
+<td><img src="screenshots/16.png" alt="Screenshot 16" width="100%"></td>
+</tr>
+<tr>
+<td><img src="screenshots/17.png" alt="Screenshot 17" width="100%"></td>
+<td></td>
+</tr>
+</table>
 
 ## Technical Specifications
 - **Streamlit** - Custom-built components
