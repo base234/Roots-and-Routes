@@ -79,118 +79,170 @@ _connection_manager = SnowflakeConnection.get_instance()
 
 def get_db_connection():
     """Get a connection to the Snowflake database."""
-    return SnowflakeConnection.get_instance().get_connection()
+    conn = SnowflakeConnection.get_instance().get_connection()
+    if conn is None:
+        raise Exception("Failed to establish database connection after multiple retries")
+    return conn
 
-print(get_db_connection())
+def execute_query(query, params=None):
+    """Execute a query on the Snowflake database."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Execute each permission statement separately
+        permission_statements = [
+            "USE DATABASE ROOTS_ROUTES",
+            "USE SCHEMA PUBLIC",
+            "USE WAREHOUSE COMPUTE_WH"
+        ]
+
+        for statement in permission_statements:
+            cursor.execute(statement)
+
+        if params:
+            cursor.execute(query, params)
+        else:
+            cursor.execute(query)
+        result = cursor.fetchall()
+        return result
+    except Exception as e:
+        print(f"Error executing query: {e}")
+        # Try to reconnect once
+        SnowflakeConnection.get_instance().close_connection()
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+
+            # Execute each permission statement separately after reconnection
+            for statement in permission_statements:
+                cursor.execute(statement)
+
+            if params:
+                cursor.execute(query, params)
+            else:
+                cursor.execute(query)
+            result = cursor.fetchall()
+            return result
+        except Exception as e:
+            print(f"Error executing query after reconnect: {e}")
+            return None
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
 
 def get_heritage_sites(filters: Optional[Dict] = None) -> List[Dict]:
     """Fetch heritage sites with optional filters."""
-    query = """
-    SELECT
-        h.site_id,
-        h.name,
-        h.description,
-        h.location,
-        h.latitude,
-        h.longitude,
-        h.state,
-        h.city,
-        h.established_year,
-        h.heritage_type,
-        h.unesco_status,
-        h.risk_level,
-        h.health_index,
-        h.created_at,
-        COUNT(DISTINCT v.visit_date) as visit_days,
-        COALESCE(SUM(v.visitor_count), 0) as total_visitors,
-        COALESCE(AVG(u.rating), 0) as avg_rating
-    FROM HERITAGE_SITES h
-    LEFT JOIN VISITOR_STATS v ON h.site_id = v.site_id
-    LEFT JOIN USER_INTERACTIONS u ON h.site_id = u.site_id
-    WHERE 1=1
-    """
-    params = []
+    try:
+        query = """
+        SELECT
+            h.site_id,
+            h.name,
+            h.description,
+            h.location,
+            h.latitude,
+            h.longitude,
+            h.state,
+            h.city,
+            h.established_year,
+            h.heritage_type,
+            h.unesco_status,
+            h.risk_level,
+            h.health_index,
+            h.created_at,
+            COUNT(DISTINCT v.visit_date) as visit_days,
+            COALESCE(SUM(v.visitor_count), 0) as total_visitors,
+            COALESCE(AVG(u.rating), 0) as avg_rating
+        FROM HERITAGE_SITES h
+        LEFT JOIN VISITOR_STATS v ON h.site_id = v.site_id
+        LEFT JOIN USER_INTERACTIONS u ON h.site_id = u.site_id
+        WHERE 1=1
+        """
+        params = []
 
-    if filters:
-        if 'search_query' in filters:
-            query += """ AND (
-                CONTAINS(LOWER(h.name), LOWER(%s)) OR
-                CONTAINS(LOWER(h.description), LOWER(%s)) OR
-                CONTAINS(LOWER(h.location), LOWER(%s)) OR
-                CONTAINS(LOWER(h.city), LOWER(%s)) OR
-                SOUNDEX(h.name) = SOUNDEX(%s) OR
-                SOUNDEX(h.location) = SOUNDEX(%s)
-            )"""
-            search_term = filters['search_query']
-            params.extend([search_term, search_term, search_term, search_term, search_term, search_term])
-        if 'type' in filters:
-            placeholders = ','.join(['%s'] * len(filters['type']))
-            query += f" AND h.heritage_type IN ({placeholders})"
-            params.extend(filters['type'])
-        if 'state' in filters:
-            query += " AND h.state = %s"
-            params.append(filters['state'])
-        if 'risk_level' in filters:
-            placeholders = ','.join(['%s'] * len(filters['risk_level']))
-            query += f" AND h.risk_level IN ({placeholders})"
-            params.extend(filters['risk_level'])
-        if 'year_range' in filters:
-            query += " AND h.established_year BETWEEN %s AND %s"
-            params.extend(filters['year_range'])
-        if 'unesco_status' in filters:
-            query += " AND h.unesco_status = %s"
-            params.append(filters['unesco_status'])
+        if filters:
+            if 'search_query' in filters:
+                query += """ AND (
+                    CONTAINS(LOWER(h.name), LOWER(%s)) OR
+                    CONTAINS(LOWER(h.description), LOWER(%s)) OR
+                    CONTAINS(LOWER(h.location), LOWER(%s)) OR
+                    CONTAINS(LOWER(h.city), LOWER(%s)) OR
+                    SOUNDEX(h.name) = SOUNDEX(%s) OR
+                    SOUNDEX(h.location) = SOUNDEX(%s)
+                )"""
+                search_term = filters['search_query']
+                params.extend([search_term, search_term, search_term, search_term, search_term, search_term])
+            if 'type' in filters:
+                placeholders = ','.join(['%s'] * len(filters['type']))
+                query += f" AND h.heritage_type IN ({placeholders})"
+                params.extend(filters['type'])
+            if 'state' in filters:
+                query += " AND h.state = %s"
+                params.append(filters['state'])
+            if 'risk_level' in filters:
+                placeholders = ','.join(['%s'] * len(filters['risk_level']))
+                query += f" AND h.risk_level IN ({placeholders})"
+                params.extend(filters['risk_level'])
+            if 'year_range' in filters:
+                query += " AND h.established_year BETWEEN %s AND %s"
+                params.extend(filters['year_range'])
+            if 'unesco_status' in filters:
+                query += " AND h.unesco_status = %s"
+                params.append(filters['unesco_status'])
 
-    query += """
-    GROUP BY
-        h.site_id,
-        h.name,
-        h.description,
-        h.location,
-        h.latitude,
-        h.longitude,
-        h.state,
-        h.city,
-        h.established_year,
-        h.heritage_type,
-        h.unesco_status,
-        h.risk_level,
-        h.health_index,
-        h.created_at
-    ORDER BY total_visitors DESC, avg_rating DESC
-    LIMIT %s
-    """
-    params.append(DISCOVERY_CONFIG['search_limit'])
+        query += """
+        GROUP BY
+            h.site_id,
+            h.name,
+            h.description,
+            h.location,
+            h.latitude,
+            h.longitude,
+            h.state,
+            h.city,
+            h.established_year,
+            h.heritage_type,
+            h.unesco_status,
+            h.risk_level,
+            h.health_index,
+            h.created_at
+        ORDER BY total_visitors DESC, avg_rating DESC
+        LIMIT %s
+        """
+        params.append(DISCOVERY_CONFIG['search_limit'])
 
-    result = execute_query(query, params)
-    if result is None:
+        result = execute_query(query, params)
+        if result is None:
+            return []
+
+        # Convert the result to a list of dictionaries
+        sites = []
+        for row in result:
+            site = {
+                'site_id': row[0],
+                'name': row[1],
+                'description': row[2],
+                'location': row[3],
+                'latitude': row[4],
+                'longitude': row[5],
+                'state': row[6],
+                'city': row[7],
+                'established_year': row[8],
+                'heritage_type': row[9],
+                'unesco_status': row[10],
+                'risk_level': row[11],
+                'health_index': row[12],
+                'created_at': row[13],
+                'visit_days': row[14],
+                'total_visitors': row[15],
+                'avg_rating': row[16]
+            }
+            sites.append(site)
+
+        return sites
+    except Exception as e:
+        print(f"Error in get_heritage_sites: {e}")
         return []
-
-    # Convert the result to a list of dictionaries
-    sites = []
-    for row in result:
-        site = {
-            'site_id': row[0],
-            'name': row[1],
-            'description': row[2],
-            'location': row[3],
-            'latitude': row[4],
-            'longitude': row[5],
-            'state': row[6],
-            'city': row[7],
-            'established_year': row[8],
-            'heritage_type': row[9],
-            'unesco_status': row[10],
-            'risk_level': row[11],
-            'health_index': row[12],
-            'created_at': row[13],
-            'visit_days': row[14],
-            'total_visitors': row[15],
-            'avg_rating': row[16]
-        }
-        sites.append(site)
-
-    return sites
 
 def get_all_heritage_sites() -> List[Dict]:
     """Fetch all heritage sites."""
@@ -333,56 +385,6 @@ def get_user_reviews(site_id: str) -> List[Dict]:
         reviews.append(review)
 
     return reviews
-
-def execute_query(query, params=None):
-    """Execute a query on the Snowflake database."""
-    conn = get_db_connection()
-    if conn is None:
-        return None
-    try:
-        cursor = conn.cursor()
-
-        # Execute each permission statement separately
-        permission_statements = [
-            "USE DATABASE ROOTS_ROUTES",
-            "USE SCHEMA PUBLIC",
-            "USE WAREHOUSE COMPUTE_WH"
-        ]
-
-        for statement in permission_statements:
-            cursor.execute(statement)
-
-        if params:
-            cursor.execute(query, params)
-        else:
-            cursor.execute(query)
-        result = cursor.fetchall()
-        return result
-    except Exception as e:
-        print(f"Error executing query: {e}")
-        # Try to reconnect once
-        SnowflakeConnection.get_instance().close_connection()
-        conn = get_db_connection()
-        if conn is None:
-            return None
-        try:
-            cursor = conn.cursor()
-
-            # Execute each permission statement separately after reconnection
-            for statement in permission_statements:
-                cursor.execute(statement)
-
-            if params:
-                cursor.execute(query, params)
-            else:
-                cursor.execute(query)
-            result = cursor.fetchall()
-            return result
-        except Exception as e:
-            print(f"Error executing query after reconnect: {e}")
-            return None
-    finally:
-        cursor.close()
 
 def execute_update(query, params=None):
     """Execute an update query (INSERT, UPDATE, DELETE)."""
