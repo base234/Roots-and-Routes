@@ -13,6 +13,7 @@ from src.utils.config import APP_CONFIG
 from src.views.metrics_overview import render_metrics_overview
 from src.views.site_details import render_site_details
 from src.views.tourism_analytics import render_tourism_analytics
+from src.views.heritage_sites import render_heritage_sites_page
 
 # Set page configuration
 st.set_page_config(
@@ -57,6 +58,8 @@ if st.sidebar.button("Tourism Analytics", key="tourism_analytics_button"):
     st.session_state['current_view'] = 'tourism_analytics'
 if st.sidebar.button("AI Insights", key="ai_insights_button"):
     st.session_state['current_view'] = 'ai_insights'
+if st.sidebar.button("Heritage Sites", key="heritage_sites_button"):
+    st.session_state['current_view'] = 'heritage_sites'
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("Built with ❤️ for Cultural Heritage")
@@ -98,5 +101,7 @@ elif current_view == 'tourism_analytics':
 elif current_view == 'ai_insights':
     from src.views.ai_insights import render_ai_insights_page
     render_ai_insights_page()
+elif current_view == 'heritage_sites':
+    render_heritage_sites_page()
 
 render_footer()

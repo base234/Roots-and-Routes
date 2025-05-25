@@ -192,6 +192,53 @@ def get_heritage_sites(filters: Optional[Dict] = None) -> List[Dict]:
 
     return sites
 
+def get_all_heritage_sites() -> List[Dict]:
+    """Fetch all heritage sites."""
+    query = """
+    SELECT
+        site_id,
+        name,
+        description,
+        location,
+        latitude,
+        longitude,
+        state,
+        city,
+        established_year,
+        heritage_type,
+        unesco_status,
+        risk_level,
+        health_index
+    FROM HERITAGE_SITES
+    ORDER BY name ASC
+    """
+
+    result = execute_query(query)
+    if result is None:
+        return []
+
+    # Convert the result to a list of dictionaries
+    sites = []
+    for row in result:
+        site = {
+            'site_id': row[0],
+            'name': row[1],
+            'description': row[2],
+            'location': row[3],
+            'latitude': row[4],
+            'longitude': row[5],
+            'state': row[6],
+            'city': row[7],
+            'established_year': row[8],
+            'heritage_type': row[9],
+            'unesco_status': row[10],
+            'risk_level': row[11],
+            'health_index': row[12]
+        }
+        sites.append(site)
+
+    return sites
+
 def get_site_details(site_id: str) -> Dict:
     """Fetch details of a specific heritage site."""
     query = """
