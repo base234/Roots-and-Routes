@@ -21,3 +21,18 @@ source venv/bin/activate
 ```
 pip install -r requirements.txt
 ```
+
+## Run the app
+```
+python -m streamlit run src/app.py
+```
+
+### For Linux systems
+```
+streamlit run src/app.py
+```
+
+### For Windows systems
+```
+streamlit run src\app.py
+```
