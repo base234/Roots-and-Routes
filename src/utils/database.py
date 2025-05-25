@@ -600,6 +600,40 @@ def get_visitor_trends() -> List[Dict]:
 
     return trends
 
+def get_all_art_forms() -> List[Dict]:
+    """Fetch all art forms."""
+    query = """
+    SELECT
+        art_form_id,
+        name,
+        description,
+        origin_state,
+        category,
+        risk_level,
+        practitioners_count
+    FROM ART_FORMS
+    ORDER BY name ASC
+    """
+
+    result = execute_query(query)
+    if result is None:
+        return []
+
+    art_forms = []
+    for row in result:
+        art_form = {
+            'art_form_id': row[0],
+            'name': row[1],
+            'description': row[2],
+            'origin_state': row[3],
+            'category': row[4],
+            'risk_level': row[5],
+            'practitioners_count': row[6]
+        }
+        art_forms.append(art_form)
+
+    return art_forms
+
 def get_art_forms(filters: Optional[Dict] = None) -> List[Dict]:
     """Fetch art forms with optional filters or by site ID."""
     query = """

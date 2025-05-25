@@ -15,6 +15,7 @@ from src.views.site_details import render_site_details
 from src.views.tourism_analytics import render_tourism_analytics
 from src.views.heritage_sites import render_heritage_sites_page
 from src.views.cultural_events import render_cultural_events_page
+from src.views.art_forms import render_art_forms_page
 
 # Set page configuration
 st.set_page_config(
@@ -63,6 +64,8 @@ if st.sidebar.button("Heritage Sites", key="heritage_sites_button"):
     st.session_state['current_view'] = 'heritage_sites'
 if st.sidebar.button("Cultural Events", key="cultural_events_button"):
     st.session_state['current_view'] = 'cultural_events'
+if st.sidebar.button("Art Forms", key="art_forms_button"):
+    st.session_state['current_view'] = 'art_forms'
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("Built with ❤️ for Cultural Heritage")
@@ -72,6 +75,7 @@ st.sidebar.markdown("""
         <a href="#">About</a>
         <a href="#">Heritage Sites</a>
         <a href="#">Cultural Events</a>
+        <a href="#">Art Forms</a>
         </div>
         <div class="footer-text">
             <p>&copy; 2025 Roots & Routes. All rights reserved.</p>
@@ -108,5 +112,7 @@ elif current_view == 'heritage_sites':
     render_heritage_sites_page()
 elif current_view == 'cultural_events':
     render_cultural_events_page()
+elif current_view == 'art_forms':
+    render_art_forms_page()
 
 render_footer()
