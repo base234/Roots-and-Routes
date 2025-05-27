@@ -24,12 +24,12 @@ def get_site_image(query):
     return None
 
 def display_results_grid(items, item_type):
-    """Display items in a 3-column grid."""
+    """Display items in a 4-column grid."""
     if not items:
         st.info(f"No {item_type} available.")
         return
 
-    num_cols = 3
+    num_cols = 4
     num_rows = (len(items) + num_cols - 1) // num_cols
 
     for row in range(num_rows):
