@@ -1,8 +1,77 @@
 import streamlit as st
-from src.utils.config import DISCOVERY_CONFIG
+from src.utils.config import DISCOVERY_CONFIG, UNSPLASH_ACCESS_KEY
 from src.utils.database import get_heritage_sites, get_art_forms, get_cultural_events
+import requests
+
+def get_site_image(query):
+    """Fetch a relevant image from Unsplash."""
+    try:
+        response = requests.get(
+            "https://api.unsplash.com/search/photos",
+            params={
+                "query": f"{query}",
+                "per_page": 1
+            },
+            headers={
+                "Authorization": f"Client-ID {UNSPLASH_ACCESS_KEY}"
+            }
+        )
+        data = response.json()
+        if data['results']:
+            return data['results'][0]['urls']['regular']
+    except Exception as e:
+        st.warning(f"Could not fetch image: {str(e)}")
+    return None
 
 def render_search_bar():
+    # Add custom CSS for fixed image sizes and consistent card appearance
+    st.markdown("""
+        <style>
+        .result-card {
+            border-radius: 8px;
+            padding: 0;
+            margin-bottom: 20px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .result-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .result-content {
+            padding: 15px;
+        }
+        .result-title {
+            margin-top: 0;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .result-details {
+            font-size: 0.9em;
+            margin: 5px 0;
+        }
+        .expanded-details {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        div[data-testid="stImage"] {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            margin: 0;
+        }
+        div[data-testid="stImage"] img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     # Search type selection
     search_type = st.radio(
         "Search and plan your next visit",
@@ -200,49 +269,109 @@ def render_search_bar():
 
         # Display results
         if any(results.values()):
+            # Calculate total results
+            total_results = sum(len(v) for v in results.values())
+            st.markdown(f"### Found {total_results} results")
             st.markdown('<div class="search-results">', unsafe_allow_html=True)
 
             if 'heritage_sites' in results and results['heritage_sites']:
-                st.markdown("### Heritage Sites")
-                for site in results['heritage_sites']:
-                    st.markdown(f"""
-                        <div class="result-card">
-                            <h3 class="result-title">{site['name']}</h3>
-                            <p class="result-details"><strong>Location:</strong> {site['location']}</p>
-                            <p class="result-details"><strong>Type:</strong> {site['heritage_type']}</p>
-                            <p class="result-details"><strong>Status:</strong> {site['risk_level']}</p>
-                            <p class="result-details"><strong>UNESCO:</strong> {"Yes" if site['unesco_status'] else "No"}</p>
-                            <p class="result-details">{site['description']}</p>
-                        </div>
-                    """, unsafe_allow_html=True)
+                sites = results['heritage_sites']
+                st.markdown(f"### Heritage Sites ({len(sites)})")
+                num_cols = 3
+                num_rows = (len(sites) + num_cols - 1) // num_cols
+
+                for row in range(num_rows):
+                    cols = st.columns(num_cols)
+                    for col in range(num_cols):
+                        idx = row * num_cols + col
+                        if idx < len(sites):
+                            site = sites[idx]
+                            with cols[col]:
+                                st.markdown('<div class="result-card">', unsafe_allow_html=True)
+                                image_url = get_site_image(f"{site['name']} {site['heritage_type']} {site['location']}")
+                                if image_url:
+                                    st.image(image_url, use_container_width=True)
+                                else:
+                                    st.image("https://via.placeholder.com/400x200?text=No+Image", use_container_width=True)
+
+                                st.markdown('<div class="result-content">', unsafe_allow_html=True)
+                                st.markdown(f"""
+                                    <h3 class="result-title">{site['name']}</h3>
+                                    <p class="result-details"><strong>Location:</strong> {site['location']}</p>
+                                    <p class="result-details"><strong>Type:</strong> {site['heritage_type']}</p>
+                                    <p class="result-details"><strong>Status:</strong> {site['risk_level']}</p>
+                                    <p class="result-details"><strong>UNESCO:</strong> {"Yes" if site['unesco_status'] else "No"}</p>
+                                    <p class="result-details">{site['description']}</p>
+                                    {f"<p class='result-details'><strong>Historical Significance:</strong> {site.get('historical_significance', '')}</p>" if 'historical_significance' in site else ''}
+                                    {f"<p class='result-details'><strong>Conservation Efforts:</strong> {site.get('conservation_efforts', '')}</p>" if 'conservation_efforts' in site else ''}
+                                """, unsafe_allow_html=True)
+                                st.markdown('</div></div>', unsafe_allow_html=True)
 
             if 'art_forms' in results and results['art_forms']:
-                st.markdown("### Art Forms")
-                for art in results['art_forms']:
-                    st.markdown(f"""
-                        <div class="result-card">
-                            <h3 class="result-title">{art['name']}</h3>
-                            <p class="result-details"><strong>Category:</strong> {art['category']}</p>
-                            <p class="result-details"><strong>Origin State:</strong> {art['origin_state']}</p>
-                            <p class="result-details"><strong>Risk Level:</strong> {art['risk_level']}</p>
-                            <p class="result-details"><strong>Practitioners:</strong> {art['practitioners_count']}</p>
-                            <p class="result-details">{art['description']}</p>
-                        </div>
-                    """, unsafe_allow_html=True)
+                arts = results['art_forms']
+                st.markdown(f"### Art Forms ({len(arts)})")
+                num_cols = 3
+                num_rows = (len(arts) + num_cols - 1) // num_cols
+
+                for row in range(num_rows):
+                    cols = st.columns(num_cols)
+                    for col in range(num_cols):
+                        idx = row * num_cols + col
+                        if idx < len(arts):
+                            art = arts[idx]
+                            with cols[col]:
+                                st.markdown('<div class="result-card">', unsafe_allow_html=True)
+                                image_url = get_site_image(f"{art['name']} {art['category']} {art['origin_state']}")
+                                if image_url:
+                                    st.image(image_url, use_container_width=True)
+                                else:
+                                    st.image("https://via.placeholder.com/400x200?text=No+Image", use_container_width=True)
+
+                                st.markdown('<div class="result-content">', unsafe_allow_html=True)
+                                st.markdown(f"""
+                                    <h3 class="result-title">{art['name']}</h3>
+                                    <p class="result-details"><strong>Category:</strong> {art['category']}</p>
+                                    <p class="result-details"><strong>Origin State:</strong> {art['origin_state']}</p>
+                                    <p class="result-details"><strong>Risk Level:</strong> {art['risk_level']}</p>
+                                    <p class="result-details"><strong>Practitioners:</strong> {art['practitioners_count']}</p>
+                                    <p class="result-details">{art['description']}</p>
+                                    {f"<p class='result-details'><strong>Techniques:</strong> {art.get('techniques', '')}</p>" if 'techniques' in art else ''}
+                                    {f"<p class='result-details'><strong>Cultural Significance:</strong> {art.get('cultural_significance', '')}</p>" if 'cultural_significance' in art else ''}
+                                """, unsafe_allow_html=True)
+                                st.markdown('</div></div>', unsafe_allow_html=True)
 
             if 'cultural_events' in results and results['cultural_events']:
-                st.markdown("### Cultural Events")
-                for event in results['cultural_events']:
-                    st.markdown(f"""
-                        <div class="result-card">
-                            <h3 class="result-title">{event['name']}</h3>
-                            <p class="result-details"><strong>Type:</strong> {event['event_type']}</p>
-                            <p class="result-details"><strong>Location:</strong> {event['location']}</p>
-                            <p class="result-details"><strong>Organizer:</strong> {event['organizer']}</p>
-                            <p class="result-details"><strong>Date:</strong> {event['start_date']} to {event['end_date']}</p>
-                            <p class="result-details">{event['description']}</p>
-                        </div>
-                    """, unsafe_allow_html=True)
+                events = results['cultural_events']
+                st.markdown(f"### Cultural Events ({len(events)})")
+                num_cols = 3
+                num_rows = (len(events) + num_cols - 1) // num_cols
+
+                for row in range(num_rows):
+                    cols = st.columns(num_cols)
+                    for col in range(num_cols):
+                        idx = row * num_cols + col
+                        if idx < len(events):
+                            event = events[idx]
+                            with cols[col]:
+                                st.markdown('<div class="result-card">', unsafe_allow_html=True)
+                                image_url = get_site_image(f"{event['name']} {event['event_type']} {event['location']}")
+                                if image_url:
+                                    st.image(image_url, use_container_width=True)
+                                else:
+                                    st.image("https://via.placeholder.com/400x200?text=No+Image", use_container_width=True)
+
+                                st.markdown('<div class="result-content">', unsafe_allow_html=True)
+                                st.markdown(f"""
+                                    <h3 class="result-title">{event['name']}</h3>
+                                    <p class="result-details"><strong>Type:</strong> {event['event_type']}</p>
+                                    <p class="result-details"><strong>Location:</strong> {event['location']}</p>
+                                    <p class="result-details"><strong>Organizer:</strong> {event['organizer']}</p>
+                                    <p class="result-details"><strong>Date:</strong> {event['start_date']} to {event['end_date']}</p>
+                                    <p class="result-details">{event['description']}</p>
+                                    {f"<p class='result-details'><strong>Activities:</strong> {event.get('activities', '')}</p>" if 'activities' in event else ''}
+                                    {f"<p class='result-details'><strong>Highlights:</strong> {event.get('highlights', '')}</p>" if 'highlights' in event else ''}
+                                """, unsafe_allow_html=True)
+                                st.markdown('</div></div>', unsafe_allow_html=True)
 
             st.markdown('</div>', unsafe_allow_html=True)
         else:
