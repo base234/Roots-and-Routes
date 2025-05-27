@@ -157,6 +157,9 @@ def render_search_bar():
             label_visibility="collapsed"
         )
 
+        # Initialize use_advanced_filters
+        use_advanced_filters = False
+
         # Advanced filters - only show for specific search types
         if search_type in ["Heritage Sites", "Art Forms", "Cultural Events"]:
             use_advanced_filters = st.checkbox("Use Advanced Filters", value=False)
@@ -275,6 +278,11 @@ def render_search_bar():
         search_clicked = st.button("Search", key="search_button")
 
         if search_clicked:
+            # Check if search query is empty
+            if not search_query and not use_advanced_filters:
+                st.info("Please enter a search term or use advanced filters to search.")
+                return
+
             # Prepare filters dictionary
             filters = {}
 
