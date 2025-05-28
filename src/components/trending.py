@@ -84,10 +84,8 @@ def render_trending():
                         st.image("https://via.placeholder.com/400x200?text=No+Image", use_container_width=True)
                     st.markdown(f"#### {site['name']}")
                     st.markdown(f"*{site['location']}, {site['state']}*")
-                    st.markdown(f"**Visitors:** {site['total_visitors']:,}")
-                    st.markdown(f"**Rating:** {site['avg_rating']:.1f} ⭐")
                     # Add Read More link
-                    if st.button(f"Read More about {site['name']}", key=f"read_more_{site['name']}"):
+                    if st.button("Read More...", key=f"read_more_{site['name']}"):
                         st.session_state['selected_site'] = site['name']
                         st.session_state['current_view'] = 'site_details'
                         st.rerun()
