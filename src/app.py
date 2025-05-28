@@ -51,20 +51,20 @@ if 'current_view' not in st.session_state:
 # Navigation buttons in sidebar
 if st.sidebar.button("Home", key="home_button"):
     st.session_state['current_view'] = 'home'
-if st.sidebar.button("Metrics Overview", key="metrics_overview_button"):
-    st.session_state['current_view'] = 'metrics_overview'
 if st.sidebar.button("Discover", key="discover_button"):
     st.session_state['current_view'] = 'discover'
-if st.sidebar.button("Tourism Analytics", key="tourism_analytics_button"):
-    st.session_state['current_view'] = 'tourism_analytics'
-if st.sidebar.button("AI Insights", key="ai_insights_button"):
-    st.session_state['current_view'] = 'ai_insights'
 if st.sidebar.button("Heritage Sites", key="heritage_sites_button"):
     st.session_state['current_view'] = 'heritage_sites'
 if st.sidebar.button("Cultural Events", key="cultural_events_button"):
     st.session_state['current_view'] = 'cultural_events'
 if st.sidebar.button("Art Forms", key="art_forms_button"):
     st.session_state['current_view'] = 'art_forms'
+if st.sidebar.button("Metrics Overview", key="metrics_overview_button"):
+    st.session_state['current_view'] = 'metrics_overview'
+if st.sidebar.button("Tourism Analytics", key="tourism_analytics_button"):
+    st.session_state['current_view'] = 'tourism_analytics'
+if st.sidebar.button("AI Insights", key="ai_insights_button"):
+    st.session_state['current_view'] = 'ai_insights'
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("Built with ❤️ for Cultural Heritage")
