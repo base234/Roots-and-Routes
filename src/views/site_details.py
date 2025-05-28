@@ -91,26 +91,34 @@ def render_site_details():
                 # Check if story exists and is valid
                 story_exists = site['story'] is not None and str(site['story']).strip() != ''
 
-                if story_exists:
+                # Function to generate and save story
+                def generate_and_save_story():
+                    story_text = ""
+                    story_placeholder = st.empty()  # Clear the placeholder
+                    for chunk in generate_site_story(site):
+                        story_text += chunk
+                        story_placeholder.markdown(story_text)
+
+                    # Save the generated story to database
+                    update_query = """
+                    UPDATE HERITAGE_SITES
+                    SET story = %s
+                    WHERE site_id = %s
+                    """
+                    execute_query(update_query, (story_text, site['site_id']))
+                    site['story'] = story_text
+                    st.rerun()
+
+                # Auto-generate if story doesn't exist
+                if not story_exists:
+                    generate_and_save_story()
+                else:
                     # Display existing story
                     story_placeholder.markdown(str(site['story']))
 
                     # Add re-generate button
-                    if st.button("🔄 Re-generate Story"):
-                        story_text = ""
-                        for chunk in generate_site_story(site):
-                            story_text += chunk
-                            story_placeholder.markdown(story_text)
-
-                        # Save the generated story to database
-                        update_query = """
-                        UPDATE HERITAGE_SITES
-                        SET story = %s
-                        WHERE site_id = %s
-                        """
-                        execute_query(update_query, (story_text, site['site_id']))
-                        site['story'] = story_text
-                        st.rerun()
+                    if st.button("🔄 Re-generate Story", key="regen_story_details"):
+                        generate_and_save_story()
 
             with col2:
                 # Create a 2x3 grid of images
@@ -241,7 +249,7 @@ def render_site_details():
         st.markdown("**Note:** Your information will be added to the story wherever it is relevant. Useless or doesn't seems to align with what the site is about will be ignored.")
 
         # Generate button
-        if st.button("Generate Story"):
+        if st.button("Generate Story", key="gen_story_custom"):
             if user_input:
                 # Create a placeholder for streaming output
                 story_placeholder = st.empty()
