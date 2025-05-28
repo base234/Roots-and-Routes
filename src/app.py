@@ -1,5 +1,4 @@
 import streamlit as st
-from src.components.dashboard import render_dashboard
 from src.components.header import render_header
 from src.components.footer import render_footer
 from src.components.search_bar import render_search_bar
