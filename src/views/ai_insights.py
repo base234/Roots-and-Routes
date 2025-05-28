@@ -267,7 +267,7 @@ def render_site_insights():
 
 def render_ai_insights_page():
     """Main function to render the AI insights page"""
-    st.title("Heritage Sites Analysis")
+    st.markdown("## Heritage Sites Analysis")
 
     # Create main tabs
     tab1, tab2 = st.tabs(["Heritage Sites List", "Site Insights"])
