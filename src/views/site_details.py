@@ -18,7 +18,22 @@ def render_site_details():
 
     # Get site details from database
     site_query = """
-    SELECT * FROM HERITAGE_SITES
+    SELECT
+        site_id,
+        name,
+        description,
+        location,
+        latitude,
+        longitude,
+        state,
+        city,
+        established_year,
+        heritage_type,
+        unesco_status,
+        risk_level,
+        health_index,
+        COALESCE(story, '') as story
+    FROM HERITAGE_SITES
     WHERE name = %s
     """
     site_details = execute_query(site_query, (site_name,))
@@ -29,7 +44,7 @@ def render_site_details():
 
     # Convert tuple to dictionary for easier access
     site = {
-        'id': site_details[0][0],
+        'site_id': site_details[0][0],
         'name': site_details[0][1],
         'description': site_details[0][2],
         'location': site_details[0][3],
@@ -41,11 +56,12 @@ def render_site_details():
         'type': site_details[0][9],
         'unesco_status': site_details[0][10],
         'risk_level': site_details[0][11],
-        'health_index': site_details[0][12]
+        'health_index': site_details[0][12],
+        'story': site_details[0][13]  # Add story field
     }
 
     # Get associated art forms
-    art_forms = get_art_forms(site['id'])
+    art_forms = get_art_forms(site['site_id'])
 
     # Back button
     if st.button("← Back to Home"):
@@ -63,10 +79,46 @@ def render_site_details():
 
         with col1:
             story_placeholder = st.empty()
-            story_text = ""
-            for chunk in generate_site_story(site):
-                story_text += chunk
-                story_placeholder.markdown(story_text)
+
+            # Check if story exists and is valid
+            story_exists = site['story'] is not None and str(site['story']).strip() != ''
+
+            if story_exists:
+                # Display existing story
+                story_placeholder.markdown(str(site['story']))
+
+                # Add re-generate button
+                if st.button("🔄 Re-generate Story"):
+                    story_text = ""
+                    for chunk in generate_site_story(site):
+                        story_text += chunk
+                        story_placeholder.markdown(story_text)
+
+                    # Save the generated story to database
+                    update_query = """
+                    UPDATE HERITAGE_SITES
+                    SET story = %s
+                    WHERE site_id = %s
+                    """
+                    execute_query(update_query, (story_text, site['site_id']))
+                    site['story'] = story_text
+                    st.rerun()  # Rerun to refresh the page with new story
+            else:
+                # Generate new story if none exists
+                story_text = ""
+                for chunk in generate_site_story(site):
+                    story_text += chunk
+                    story_placeholder.markdown(story_text)
+
+                # Save the generated story to database
+                update_query = """
+                UPDATE HERITAGE_SITES
+                SET story = %s
+                WHERE site_id = %s
+                """
+                execute_query(update_query, (story_text, site['site_id']))
+                site['story'] = story_text
+                st.rerun()  # Rerun to refresh the page with new story
 
         with col2:
             # Create a 2x3 grid of images
@@ -108,7 +160,7 @@ def render_site_details():
     WHERE site_id = %s
     ORDER BY VISIT_DATE DESC
     """
-    visitor_stats = execute_query(stats_query, (site['id'],))
+    visitor_stats = execute_query(stats_query, (site['site_id'],))
 
     if visitor_stats:
         df_stats = pd.DataFrame(visitor_stats, columns=[
@@ -136,7 +188,7 @@ def render_site_details():
         WHERE site_id = %s
         ORDER BY interaction_date DESC
         """
-        interactions = execute_query(interactions_query, (site['id'],))
+        interactions = execute_query(interactions_query, (site['site_id'],))
 
         if interactions:
             df_interactions = pd.DataFrame(interactions, columns=[
