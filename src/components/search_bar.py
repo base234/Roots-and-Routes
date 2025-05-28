@@ -372,17 +372,117 @@ def render_search_bar():
 
     with tab2:
         sites = get_all_heritage_sites()
-        st.markdown(f"### Heritage Sites ({len(sites)})")
-        display_results_grid(sites, "Heritage Sites")
+
+        # Create a single row with three columns for heading and filters
+        col1, col2, col3 = st.columns([2, 2, 1])
+
+        with col1:
+            st.markdown(f"### Heritage Sites ({len(sites)})")
+
+        with col2:
+            # State filter dropdown
+            state_filter = st.selectbox(
+                "Filter by State",
+                ["All States", "Maharashtra", "Karnataka", "Tamil Nadu", "Rajasthan", "Uttar Pradesh",
+                 "Madhya Pradesh", "Odisha", "Delhi", "Gujarat", "Telangana", "West Bengal", "Assam"],
+                key="heritage_state_filter"
+            )
+
+        with col3:
+            # UNESCO status radio buttons
+            unesco_filter = st.radio(
+                "UNESCO Status",
+                ["All", "UNESCO", "Non-UNESCO"],
+                horizontal=True,
+                key="heritage_unesco_filter"
+            )
+
+        # Apply filters
+        filtered_sites = sites
+        if state_filter != "All States":
+            filtered_sites = [site for site in filtered_sites if site['location'] == state_filter]
+
+        if unesco_filter == "UNESCO":
+            filtered_sites = [site for site in filtered_sites if site['unesco_status']]
+        elif unesco_filter == "Non-UNESCO":
+            filtered_sites = [site for site in filtered_sites if not site['unesco_status']]
+
+        # Display filtered results
+        display_results_grid(filtered_sites, "Heritage Sites")
 
     with tab3:
         events = get_all_cultural_events()
-        st.markdown(f"### Cultural Events ({len(events)})")
-        display_results_grid(events, "Cultural Events")
+
+        # Create a single row with three columns for heading and filters
+        col1, col2, col3 = st.columns([2, 2, 1])
+
+        with col1:
+            st.markdown(f"### Cultural Events ({len(events)})")
+
+        with col2:
+            # State filter dropdown
+            state_filter = st.selectbox(
+                "Filter by State",
+                ["All States", "Maharashtra", "Karnataka", "Tamil Nadu", "Rajasthan", "Uttar Pradesh",
+                 "Madhya Pradesh", "Odisha", "Delhi", "Gujarat", "Telangana", "West Bengal", "Assam"],
+                key="event_state_filter"
+            )
+
+        with col3:
+            # Event type filter dropdown
+            event_type_filter = st.selectbox(
+                "Event Type",
+                ["All Types", "Dance Festival", "Music Festival", "Cultural Festival", "Eco Festival", "Wildlife Festival"],
+                key="event_type_filter"
+            )
+
+        # Apply filters
+        filtered_events = events
+        if state_filter != "All States":
+            filtered_events = [event for event in filtered_events if event['location'] == state_filter]
+
+        if event_type_filter != "All Types":
+            filtered_events = [event for event in filtered_events if event['event_type'] == event_type_filter]
+
+        # Display filtered results
+        display_results_grid(filtered_events, "Cultural Events")
 
     with tab4:
         arts = get_all_art_forms()
-        st.markdown(f"### Art Forms ({len(arts)})")
-        display_results_grid(arts, "Art Forms")
+
+        # Create a single row with three columns for heading and filters
+        col1, col2, col3 = st.columns([2, 2, 1])
+
+        with col1:
+            st.markdown(f"### Art Forms ({len(arts)})")
+
+        with col2:
+            # State filter dropdown
+            state_filter = st.selectbox(
+                "Filter by State",
+                ["All States", "Kerala", "Uttar Pradesh", "Tamil Nadu", "Andhra Pradesh", "Odisha",
+                 "Manipur", "Assam", "Bihar", "West Bengal", "Maharashtra", "Punjab",
+                 "Madhya Pradesh", "Gujarat", "Karnataka", "Rajasthan"],
+                key="art_state_filter"
+            )
+
+        with col3:
+            # Category filter dropdown
+            category_filter = st.selectbox(
+                "Category",
+                ["All Categories", "Dance", "Painting", "Textile", "Theatre", "Ritual"],
+                key="art_category_filter"
+            )
+
+        # Apply filters
+        filtered_arts = arts
+        if state_filter != "All States":
+            filtered_arts = [art for art in filtered_arts if art['origin_state'] == state_filter]
+
+        if category_filter != "All Categories":
+            filtered_arts = [art for art in filtered_arts if art['category'] == category_filter]
+
+        # Display filtered results
+        display_results_grid(filtered_arts, "Art Forms")
 
     return search_query
