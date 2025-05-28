@@ -7,6 +7,7 @@ CREATE TABLE HERITAGE_SITES (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
+    story TEXT,
     location VARCHAR(255),
     latitude DECIMAL(10, 8),
     longitude DECIMAL(11, 8),
@@ -201,3 +202,6 @@ CREATE INDEX idx_tourism_potential_score ON TOURISM_POTENTIAL(overall_potential_
 -- Preservation Priorities Indexes
 CREATE INDEX idx_preservation_priorities_site ON PRESERVATION_PRIORITIES(site_id);
 CREATE INDEX idx_preservation_priorities_risk ON PRESERVATION_PRIORITIES(risk_assessment_score);
+
+-- Add story column to existing HERITAGE_SITES table
+ALTER TABLE HERITAGE_SITES ADD COLUMN story TEXT;
