@@ -97,7 +97,6 @@ elif current_view == 'discover':
     st.markdown("#### Roots and Routes")
     st.markdown("## Discover World Heritage")
     st.markdown("<p style='font-size: 1.2rem; color: #666;'>Explore UNESCO World Heritage Sites and Cultural Treasures</p>", unsafe_allow_html=True)
-    st.markdown("---")
     render_search_bar()
 elif current_view == 'site_details':
     render_site_details()
