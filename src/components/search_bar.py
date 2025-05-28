@@ -3,6 +3,33 @@ from src.utils.config import DISCOVERY_CONFIG, UNSPLASH_ACCESS_KEY
 from src.utils.database import get_heritage_sites, get_all_heritage_sites, get_art_forms, get_all_art_forms, get_cultural_events, get_all_cultural_events
 import requests
 
+# City to State mapping
+CITY_STATE_MAPPING = {
+    "Khajuraho": "Madhya Pradesh",
+    "Konark": "Odisha",
+    "Aurangabad": "Maharashtra",
+    "Mahabalipuram": "Tamil Nadu",
+    "Pattadakal": "Karnataka",
+    "Delhi": "Delhi",
+    "Mumbai": "Maharashtra",
+    "Hampi": "Karnataka",
+    "Agra": "Uttar Pradesh",
+    "Sanchi": "Madhya Pradesh",
+    "Fatehpur Sikri": "Uttar Pradesh",
+    "Thanjavur": "Tamil Nadu",
+    "Champaner": "Gujarat",
+    "Patan": "Gujarat",
+    "Mysore": "Karnataka",
+    "Madurai": "Tamil Nadu",
+    "Guwahati": "Assam",
+    "Sundarbans": "West Bengal",
+    "Kaziranga": "Assam"
+}
+
+def get_state_from_city(city):
+    """Get state name from city name using the mapping."""
+    return CITY_STATE_MAPPING.get(city, "")
+
 def get_site_image(query):
     """Fetch a relevant image from Unsplash."""
     try:
@@ -46,7 +73,7 @@ def display_results_grid(items, item_type):
                         image_url = get_site_image(f"{item['name']} {item['heritage_type']} {item['location']}")
                         content = f"""
                             <h3 class="result-title">{item['name']}</h3>
-                            <p class="result-details"><strong>Location:</strong> {item['location']}</p>
+                            <p class="result-details"><strong>Location:</strong> {item['location']}{f", {item.get('state', '')}" if item.get('state') else ''}</p>
                             <p class="result-details"><strong>Type:</strong> {item['heritage_type']}</p>
                             <p class="result-details"><strong>Status:</strong> {item['risk_level']}</p>
                             <p class="result-details"><strong>UNESCO:</strong> {"Yes" if item['unesco_status'] else "No"}</p>
@@ -68,10 +95,11 @@ def display_results_grid(items, item_type):
                         """
                     else:  # Cultural Events
                         image_url = get_site_image(f"{item['name']} {item['event_type']} {item['location']}")
+                        state = get_state_from_city(item['location'])
                         content = f"""
                             <h3 class="result-title">{item['name']}</h3>
                             <p class="result-details"><strong>Type:</strong> {item['event_type']}</p>
-                            <p class="result-details"><strong>Location:</strong> {item['location']}</p>
+                            <p class="result-details"><strong>Location:</strong> {item['location']}{f", {state}" if state else ''}</p>
                             <p class="result-details"><strong>Organizer:</strong> {item['organizer']}</p>
                             <p class="result-details"><strong>Date:</strong> {item['start_date']} to {item['end_date']}</p>
                             <p class="result-details">{item['description']}</p>
@@ -400,7 +428,7 @@ def render_search_bar():
         # Apply filters
         filtered_sites = sites
         if state_filter != "All States":
-            filtered_sites = [site for site in filtered_sites if site['location'] == state_filter]
+            filtered_sites = [site for site in filtered_sites if site.get('state') == state_filter]
 
         if unesco_filter == "UNESCO":
             filtered_sites = [site for site in filtered_sites if site['unesco_status']]
@@ -439,7 +467,7 @@ def render_search_bar():
         # Apply filters
         filtered_events = events
         if state_filter != "All States":
-            filtered_events = [event for event in filtered_events if event['location'] == state_filter]
+            filtered_events = [event for event in filtered_events if get_state_from_city(event['location']) == state_filter]
 
         if event_type_filter != "All Types":
             filtered_events = [event for event in filtered_events if event['event_type'] == event_type_filter]
