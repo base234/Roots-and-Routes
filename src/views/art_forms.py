@@ -38,8 +38,24 @@ def get_art_form_image(art_form_name):
 
 def render_art_forms_page():
     """Render the art forms page with all available art forms."""
+    # Add custom CSS for fixed image sizes
+    st.markdown("""
+        <style>
+        div[data-testid="stImage"] {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            margin: 0;
+        }
+        div[data-testid="stImage"] img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     st.markdown("## Art Forms")
-    st.markdown("Discover traditional and contemporary art forms from across India")
 
     # Get all art forms
     art_forms = get_all_art_forms()
@@ -101,33 +117,29 @@ def render_art_forms_page():
                     # Get art form image
                     image_url = get_art_form_image(art_form['name'])
                     if not image_url:
-                        image_url = "https://via.placeholder.com/400x300?text=No+Image+Available"
+                        image_url = "https://via.placeholder.com/400x200?text=No+Image+Available"
 
                     # Display art form image
                     st.image(image_url, use_container_width=True)
 
                     # Display art form information
                     st.markdown(f"**{art_form['name']}**")
+                    st.markdown(f"*{art_form['origin_state']}*")
 
                     # Display category tag
                     st.markdown(
-                        f'<div style="background-color: #4CAF50; color: white; padding: 2px 8px; border-radius: 4px; display: inline-block; margin: 4px 0;">'
+                        '<div style="color: #1E88E5; display: inline-block;">'
                         f'🎨 {art_form["category"]}'
                         '</div>',
                         unsafe_allow_html=True
                     )
 
-                    # Display origin state
-                    st.markdown(f"*Origin: {art_form['origin_state']}*")
-
-                    # Display practitioners count if available
-                    if art_form.get('practitioners_count'):
-                        st.markdown(f"*Practitioners: {art_form['practitioners_count']}*")
+                    st.markdown(" ")
+                    st.markdown(" ")
 
                     # Add view details button
                     if st.button("View Details", key=f"view_{art_form['name']}"):
                         st.session_state['selected_art_form'] = art_form['name']
                         st.session_state['current_view'] = 'art_form_details'
                         st.rerun()
-
-                    st.markdown("---")  # Add separator between art forms
+        st.markdown(" ")
