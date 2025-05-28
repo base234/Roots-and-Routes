@@ -86,22 +86,18 @@ st.sidebar.markdown("""
 current_view = st.session_state['current_view']
 
 if current_view == 'home':
-    st.markdown("#### Roots and Routes")
     st.markdown("## Trending Now")
     render_trending()
 elif current_view == 'metrics_overview':
-    st.markdown("#### Roots and Routes")
     st.markdown("## Metrics Overview")
     render_metrics_overview()
 elif current_view == 'discover':
-    st.markdown("#### Roots and Routes")
     st.markdown("## Discover World Heritage")
     st.markdown("<p style='font-size: 1.2rem; color: #666;'>Explore UNESCO World Heritage Sites and Cultural Treasures</p>", unsafe_allow_html=True)
     render_search_bar()
 elif current_view == 'site_details':
     render_site_details()
 elif current_view == 'tourism_analytics':
-    st.markdown("#### Roots and Routes")
     st.markdown("## Tourism Analytics")
     render_tourism_analytics()
 elif current_view == 'ai_insights':
