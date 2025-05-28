@@ -18,3 +18,5 @@ geopy
 streamlit-option-menu
 streamlit-aggrid
 streamlit-plotly-events
+python-docx
+fpdf
