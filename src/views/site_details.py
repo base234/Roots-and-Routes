@@ -228,6 +228,8 @@ def render_site_details():
             st.session_state.story_text = ""
         if 'story_displayed' not in st.session_state:
             st.session_state.story_displayed = False
+        if 'edited_story' not in st.session_state:
+            st.session_state.edited_story = ""
 
         # Textarea for user input
         user_input = st.text_area(
@@ -252,6 +254,7 @@ def render_site_details():
 
                 # Store the generated story in session state
                 st.session_state.story_text = story_text
+                st.session_state.edited_story = story_text
                 st.session_state.story_displayed = True
                 st.rerun()  # Rerun to show the story in the persistent display
             else:
@@ -260,57 +263,78 @@ def render_site_details():
         # Display the story if it exists in session state
         if st.session_state.story_displayed and st.session_state.story_text:
             st.markdown("### Generated Story")
-            st.markdown(st.session_state.story_text)
 
-        # Download buttons - only show if we have a story
-        if st.session_state.story_text:
-            st.markdown("### Download Options")
-            col1, col2 = st.columns(2)
+            # Create two columns for editor and preview
+            editor_col, preview_col = st.columns(2)
 
-            with col1:
-                # PDF download
-                pdf = FPDF()
-                pdf.add_page()
-                pdf.set_font("Arial", size=12)
-
-                # Add title
-                pdf.set_font("Arial", 'B', 16)
-                pdf.cell(200, 10, txt=site['name'], ln=True, align='C')
-                pdf.set_font("Arial", size=12)
-
-                # Add story
-                pdf.multi_cell(0, 10, txt=st.session_state.story_text)
-
-                # Save to bytes
-                pdf_bytes = pdf.output(dest='S').encode('latin-1')
-                st.download_button(
-                    label="Download as PDF",
-                    data=pdf_bytes,
-                    file_name=f"{site['name']}_story.pdf",
-                    mime="application/pdf"
+            with editor_col:
+                st.markdown("#### Editor")
+                # Add editable text area for the story
+                edited_story = st.text_area(
+                    "Edit your story:",
+                    value=st.session_state.edited_story,
+                    height=600,
+                    key="story_editor"
                 )
+                # Update the edited story in session state
+                st.session_state.edited_story = edited_story
 
-            with col2:
-                # DOCX download
-                doc = docx.Document()
+            with preview_col:
+                st.markdown("#### Preview")
+                # Show live preview of the edited story
+                st.markdown(st.session_state.edited_story)
 
-                # Add title
-                doc.add_heading(site['name'], 0)
+                # Add some spacing
+                st.markdown("<br>", unsafe_allow_html=True)
 
-                # Add story
-                doc.add_paragraph(st.session_state.story_text)
+                # Download buttons in the preview column
+                st.markdown("---")
+                download_col1, download_col2 = st.columns([1, 1])
 
-                # Save to bytes
-                docx_bytes = io.BytesIO()
-                doc.save(docx_bytes)
-                docx_bytes.seek(0)
+                with download_col1:
+                    # PDF download
+                    pdf = FPDF()
+                    pdf.add_page()
+                    pdf.set_font("Arial", size=12)
 
-                st.download_button(
-                    label="Download as DOCX",
-                    data=docx_bytes.getvalue(),
-                    file_name=f"{site['name']}_story.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                )
+                    # Add title
+                    pdf.set_font("Arial", 'B', 16)
+                    pdf.cell(200, 10, txt=site['name'], ln=True, align='C')
+                    pdf.set_font("Arial", size=12)
+
+                    # Add story (using edited version)
+                    pdf.multi_cell(0, 10, txt=st.session_state.edited_story)
+
+                    # Save to bytes
+                    pdf_bytes = pdf.output(dest='S').encode('latin-1')
+                    st.download_button(
+                        label="Download as PDF",
+                        data=pdf_bytes,
+                        file_name=f"{site['name']}_story.pdf",
+                        mime="application/pdf"
+                    )
+
+                with download_col2:
+                    # DOCX download
+                    doc = docx.Document()
+
+                    # Add title
+                    doc.add_heading(site['name'], 0)
+
+                    # Add story (using edited version)
+                    doc.add_paragraph(st.session_state.edited_story)
+
+                    # Save to bytes
+                    docx_bytes = io.BytesIO()
+                    doc.save(docx_bytes)
+                    docx_bytes.seek(0)
+
+                    st.download_button(
+                        label="Download as DOCX",
+                        data=docx_bytes.getvalue(),
+                        file_name=f"{site['name']}_story.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
 
 if __name__ == "__main__":
     render_site_details()
