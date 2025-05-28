@@ -93,11 +93,16 @@ def render_site_details():
 
                 # Function to generate and save story
                 def generate_and_save_story():
+                    # Clear the story display first
+                    story_placeholder.empty()
+
+                    # Create a new placeholder for streaming
+                    streaming_placeholder = st.empty()
                     story_text = ""
-                    story_placeholder = st.empty()  # Clear the placeholder
+
                     for chunk in generate_site_story(site):
                         story_text += chunk
-                        story_placeholder.markdown(story_text)
+                        streaming_placeholder.markdown(story_text)
 
                     # Save the generated story to database
                     update_query = """
