@@ -73,7 +73,7 @@ def render_site_details():
         st.rerun()
 
     # Site Header with Banner Image
-    st.title(site['name'])
+    st.markdown(f"## {site['name']}")
 
     # Create tabs
     tab1, tab2 = st.tabs(["Details", "Create Custom Story"])
@@ -283,9 +283,6 @@ def render_site_details():
                 st.markdown("#### Preview")
                 # Show live preview of the edited story
                 st.markdown(st.session_state.edited_story)
-
-                # Add some spacing
-                st.markdown("<br>", unsafe_allow_html=True)
 
                 # Download buttons in the preview column
                 st.markdown("---")
