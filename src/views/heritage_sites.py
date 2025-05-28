@@ -25,8 +25,24 @@ def get_site_image(site_name):
 
 def render_heritage_sites_page():
     """Render the heritage sites page with all available sites."""
+    # Add custom CSS for fixed image sizes
+    st.markdown("""
+        <style>
+        div[data-testid="stImage"] {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            margin: 0;
+        }
+        div[data-testid="stImage"] img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     st.markdown("## Heritage Sites")
-    st.markdown("Explore our collection of cultural heritage sites across India")
 
     # Get all heritage sites
     sites = get_all_heritage_sites()
@@ -87,29 +103,37 @@ def render_heritage_sites_page():
                     # Get site image
                     image_url = get_site_image(site['name'])
                     if not image_url:
-                        image_url = "https://via.placeholder.com/400x300?text=No+Image+Available"
+                        image_url = "https://via.placeholder.com/400x200?text=No+Image+Available"
 
                     # Display site image
                     st.image(image_url, use_container_width=True)
 
                     # Display site information
                     st.markdown(f"**{site['name']}**")
+                    st.markdown(f"*{site['location']}, {site['state']}*")
 
                     # Display UNESCO tag if applicable
                     if site.get('unesco_status'):
                         st.markdown(
-                            '<div style="background-color: #1E88E5; color: white; padding: 2px 8px; border-radius: 4px; display: inline-block; margin: 4px 0;">'
+                            '<div style="color: #1E88E5; display: inline-block;">'
                             '🏛️ UNESCO World Heritage Site'
                             '</div>',
                             unsafe_allow_html=True
                         )
+                    else:
+                        st.markdown(
+                            '<div style="color: #FF6B00; display: inline-block;">'
+                            '🏛️ Non-UNESCO World Heritage Site'
+                            '</div>',
+                            unsafe_allow_html=True
+                        )
 
-                    st.markdown(f"*{site['location']}, {site['state']}*")
+                    st.markdown(" ")
+                    st.markdown(" ")
 
                     # Add view details button
                     if st.button("View Details", key=f"view_{site['name']}"):
                         st.session_state['selected_site'] = site['name']
                         st.session_state['current_view'] = 'site_details'
                         st.rerun()
-
-                    st.markdown("---")  # Add separator between sites
+        st.markdown(" ")

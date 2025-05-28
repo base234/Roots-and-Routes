@@ -38,8 +38,24 @@ def get_event_image(event_name):
 
 def render_cultural_events_page():
     """Render the cultural events page with all available events."""
+    # Add custom CSS for fixed image sizes
+    st.markdown("""
+        <style>
+        div[data-testid="stImage"] {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            margin: 0;
+        }
+        div[data-testid="stImage"] img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     st.markdown("## Cultural Events")
-    st.markdown("Discover cultural events and festivals across India")
 
     # Get all cultural events
     events = get_all_cultural_events()
@@ -100,30 +116,29 @@ def render_cultural_events_page():
                     # Get event image
                     image_url = get_event_image(event['name'])
                     if not image_url:
-                        image_url = "https://via.placeholder.com/400x300?text=No+Image+Available"
+                        image_url = "https://via.placeholder.com/400x200?text=No+Image+Available"
 
                     # Display event image
                     st.image(image_url, use_container_width=True)
 
                     # Display event information
                     st.markdown(f"**{event['name']}**")
+                    st.markdown(f"*{event['location']}*")
 
                     # Display event type tag
                     st.markdown(
-                        f'<div style="background-color: #4CAF50; color: white; padding: 2px 8px; border-radius: 4px; display: inline-block; margin: 4px 0;">'
+                        '<div style="color: #1E88E5; display: inline-block;">'
                         f'🎭 {event["event_type"]}'
                         '</div>',
                         unsafe_allow_html=True
                     )
 
-                    # Display event dates and location
-                    st.markdown(f"*{event['start_date'].strftime('%b %d, %Y')} - {event['end_date'].strftime('%b %d, %Y')}*")
-                    st.markdown(f"*{event['location']}*")
+                    st.markdown(" ")
+                    st.markdown(" ")
 
                     # Add view details button
                     if st.button("View Details", key=f"view_{event['name']}"):
                         st.session_state['selected_event'] = event['name']
                         st.session_state['current_view'] = 'event_details'
                         st.rerun()
-
-                    st.markdown("---")  # Add separator between events
+        st.markdown(" ")
