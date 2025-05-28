@@ -1,6 +1,6 @@
 import streamlit as st
 from src.utils.config import DISCOVERY_CONFIG, UNSPLASH_ACCESS_KEY
-from src.utils.database import get_heritage_sites, get_all_heritage_sites, get_art_forms, get_all_art_forms, get_cultural_events, get_all_cultural_events
+from src.utils.database import get_heritage_sites, get_art_forms, get_cultural_events
 import requests
 
 # City to State mapping
@@ -165,352 +165,233 @@ def render_search_bar():
         </style>
     """, unsafe_allow_html=True)
 
-    # Create tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["Search", "Heritage Sites", "Cultural Events", "Art Forms"])
+    # Search type selection
+    search_type = st.radio(
+        "Search and plan your next visit",
+        ["All", "Heritage Sites", "Art Forms", "Cultural Events"],
+        horizontal=True,
+        key="search_type"
+    )
 
-    with tab1:
-        # Search type selection
-        search_type = st.radio(
-            "Search and plan your next visit",
-            ["All", "Heritage Sites", "Art Forms", "Cultural Events"],
-            horizontal=True,
-            key="search_type"
-        )
+    # Search input
+    search_query = st.text_input(
+        "Search",
+        placeholder="Search for heritage sites, art forms, or cultural events...",
+        key="main_search",
+        label_visibility="collapsed"
+    )
 
-        # Search input
-        search_query = st.text_input(
-            "Search",
-            placeholder="Search for heritage sites, art forms, or cultural events...",
-            key="main_search",
-            label_visibility="collapsed"
-        )
+    # Initialize use_advanced_filters
+    use_advanced_filters = False
 
-        # Initialize use_advanced_filters
-        use_advanced_filters = False
+    # Advanced filters - only show for specific search types
+    if search_type in ["Heritage Sites", "Art Forms", "Cultural Events"]:
+        use_advanced_filters = st.checkbox("Use Advanced Filters", value=False)
 
-        # Advanced filters - only show for specific search types
-        if search_type in ["Heritage Sites", "Art Forms", "Cultural Events"]:
-            use_advanced_filters = st.checkbox("Use Advanced Filters", value=False)
+        if use_advanced_filters:
+            if search_type == "Heritage Sites":
+                col1, col2, col3, col4 = st.columns(4)
 
-            if use_advanced_filters:
-                if search_type == "Heritage Sites":
-                    col1, col2, col3, col4 = st.columns(4)
+                with st.container():
+                    with col1:
+                        state = st.selectbox(
+                            "State",
+                            ["None", "Maharashtra", "Karnataka", "Tamil Nadu", "Rajasthan", "Uttar Pradesh",
+                             "Madhya Pradesh", "Odisha", "Delhi", "Gujarat", "Telangana", "West Bengal", "Assam"],
+                            index=0
+                        )
 
-                    with st.container():
-                        with col1:
-                            state = st.selectbox(
-                                "State",
-                                ["None", "Maharashtra", "Karnataka", "Tamil Nadu", "Rajasthan", "Uttar Pradesh",
-                                 "Madhya Pradesh", "Odisha", "Delhi", "Gujarat", "Telangana", "West Bengal", "Assam"],
-                                index=0
-                            )
+                    with col2:
+                        heritage_type = st.selectbox(
+                            "Heritage Type",
+                            ["None", "Monument", "Temple", "Ruins", "Cave", "Fort", "Palace", "Bridge",
+                             "Road", "Observatory", "Forest", "Park"],
+                            index=0
+                        )
 
-                        with col2:
-                            heritage_type = st.selectbox(
-                                "Heritage Type",
-                                ["None", "Monument", "Temple", "Ruins", "Cave", "Fort", "Palace", "Bridge",
-                                 "Road", "Observatory", "Forest", "Park"],
-                                index=0
-                            )
+                    with col3:
+                        conservation_status = st.selectbox(
+                            "Conservation Status",
+                            ["None", "Low", "Medium", "High"],
+                            index=0
+                        )
 
-                        with col3:
-                            conservation_status = st.selectbox(
-                                "Conservation Status",
-                                ["None", "Low", "Medium", "High"],
-                                index=0
-                            )
+                    with col4:
+                        risk_level = st.selectbox(
+                            "Risk Level",
+                            ["None", "Low", "Medium", "High"],
+                            index=0
+                        )
 
-                        with col4:
-                            risk_level = st.selectbox(
-                                "Risk Level",
-                                ["None", "Low", "Medium", "High"],
-                                index=0
-                            )
+                col1, col2 = st.columns(2)
 
-                    col1, col2 = st.columns(2)
+                with st.container():
+                    with col1:
+                        st.markdown("Year Range")
 
-                    with st.container():
-                        with col1:
-                            st.markdown("Year Range")
+                col1, col2, col3, col4 = st.columns(4)
+                with st.container():
+                    with col1:
+                        from_year = st.number_input("From", min_value=200, max_value=2025, value=200, step=1, label_visibility="collapsed")
+                    with col2:
+                        to_year = st.number_input("To", min_value=1000, max_value=2025, value=2025, step=1, label_visibility="collapsed")
 
-                    col1, col2, col3, col4 = st.columns(4)
-                    with st.container():
-                        with col1:
-                            from_year = st.number_input("From", min_value=200, max_value=2025, value=200, step=1, label_visibility="collapsed")
-                        with col2:
-                            to_year = st.number_input("To", min_value=1000, max_value=2025, value=2025, step=1, label_visibility="collapsed")
-
-                    # UNESCO checkboxes in a new line
-                    st.markdown('<div class="unesco-checkboxes">', unsafe_allow_html=True)
-                    unesco = st.checkbox("UNESCO", value=False)
-                    non_unesco = st.checkbox("Non-UNESCO", value=False)
-                    st.markdown('</div>', unsafe_allow_html=True)
-
-                elif search_type == "Art Forms":
-                    col1, col2, col3 = st.columns(3)
-
-                    with st.container():
-                        with col1:
-                            art_category = st.selectbox(
-                                "Category",
-                                ["None", "Dance", "Painting", "Textile", "Theatre", "Ritual"],
-                                index=0
-                            )
-
-                        with col2:
-                            origin_state = st.selectbox(
-                                "Origin State",
-                                ["None", "Kerala", "Uttar Pradesh", "Tamil Nadu", "Andhra Pradesh", "Odisha",
-                                 "Manipur", "Assam", "Bihar", "West Bengal", "Maharashtra", "Punjab",
-                                 "Madhya Pradesh", "Gujarat", "Karnataka", "Rajasthan"],
-                                index=0
-                            )
-
-                        with col3:
-                            risk_level = st.selectbox(
-                                "Risk Level",
-                                ["None", "Low", "Medium", "High"],
-                                index=0
-                            )
-
-                elif search_type == "Cultural Events":
-                    col1, col2, col3 = st.columns(3)
-
-                    with st.container():
-                        with col1:
-                            event_type = st.selectbox(
-                                "Event Type",
-                                ["None", "Dance Festival", "Music Festival", "Cultural Festival", "Eco Festival", "Wildlife Festival"],
-                                index=0
-                            )
-
-                        with col2:
-                            location = st.selectbox(
-                                "Location",
-                                ["None", "Khajuraho", "Konark", "Aurangabad", "Mahabalipuram", "Pattadakal",
-                                 "Delhi", "Mumbai", "Hampi", "Agra", "Sanchi", "Fatehpur Sikri", "Thanjavur",
-                                 "Champaner", "Patan", "Mysore", "Madurai", "Guwahati", "Sundarbans", "Kaziranga"],
-                                index=0
-                            )
-
-                        with col3:
-                            organizer = st.selectbox(
-                                "Organizer",
-                                ["None", "MP Tourism", "Odisha Tourism", "Maharashtra Tourism", "Tamil Nadu Tourism",
-                                 "Karnataka Tourism", "Delhi Tourism", "UP Tourism", "Gujarat Tourism", "Assam Tourism",
-                                 "West Bengal Tourism"],
-                                index=0
-                            )
-
-        # Search button
-        search_clicked = st.button("Search", key="search_button")
-
-        if search_clicked:
-            # Check if search query is empty
-            if not search_query and not use_advanced_filters:
-                st.info("Please enter a search term or use advanced filters to search.")
-                return
-
-            # Prepare filters dictionary
-            filters = {}
-
-            # Add search query if provided
-            if search_query:
-                filters['search_query'] = search_query
-                st.success(f"Searching for: {search_query}")
-
-            # Add advanced filters if enabled and selected
-            if search_type in ["Heritage Sites", "Art Forms", "Cultural Events"] and use_advanced_filters:
-                if search_type == "Heritage Sites":
-                    if state != "None":
-                        filters['state'] = state
-                    if heritage_type != "None":
-                        filters['type'] = [heritage_type]
-                    if conservation_status != "None":
-                        filters['conservation_status'] = [conservation_status]
-                    if risk_level != "None":
-                        filters['risk_level'] = [risk_level]
-
-                    # Handle UNESCO status filters
-                    if unesco or non_unesco:
-                        if unesco and not non_unesco:
-                            filters['unesco_status'] = True
-                        elif non_unesco and not unesco:
-                            filters['unesco_status'] = False
-
-                    # Add year range filter
-                    if from_year != 1000 or to_year != 2024:
-                        filters['year_range'] = [from_year, to_year]
-
-                elif search_type == "Art Forms":
-                    if art_category != "None":
-                        filters['category'] = art_category
-                    if origin_state != "None":
-                        filters['origin_state'] = origin_state
-                    if risk_level != "None":
-                        filters['risk_level'] = risk_level
-
-                elif search_type == "Cultural Events":
-                    if event_type != "None":
-                        filters['event_type'] = event_type
-                    if location != "None":
-                        filters['location'] = location
-                    if organizer != "None":
-                        filters['organizer'] = organizer
-
-            # Get search results based on search type
-            if search_type == "All":
-                results = {
-                    'heritage_sites': get_heritage_sites(filters),
-                    'art_forms': get_art_forms(filters),
-                    'cultural_events': get_cultural_events(filters)
-                }
-            elif search_type == "Heritage Sites":
-                results = {'heritage_sites': get_heritage_sites(filters)}
-            elif search_type == "Art Forms":
-                results = {'art_forms': get_art_forms(filters)}
-            elif search_type == "Cultural Events":
-                results = {'cultural_events': get_cultural_events(filters)}
-
-            # Display results
-            if any(results.values()):
-                # Calculate total results
-                total_results = sum(len(v) for v in results.values())
-                st.markdown(f"### Found {total_results} results")
-                st.markdown('<div class="search-results">', unsafe_allow_html=True)
-
-                if 'heritage_sites' in results and results['heritage_sites']:
-                    sites = results['heritage_sites']
-                    st.markdown(f"### Heritage Sites ({len(sites)})")
-                    display_results_grid(sites, "Heritage Sites")
-
-                if 'art_forms' in results and results['art_forms']:
-                    arts = results['art_forms']
-                    st.markdown(f"### Art Forms ({len(arts)})")
-                    display_results_grid(arts, "Art Forms")
-
-                if 'cultural_events' in results and results['cultural_events']:
-                    events = results['cultural_events']
-                    st.markdown(f"### Cultural Events ({len(events)})")
-                    display_results_grid(events, "Cultural Events")
-
+                # UNESCO checkboxes in a new line
+                st.markdown('<div class="unesco-checkboxes">', unsafe_allow_html=True)
+                unesco = st.checkbox("UNESCO", value=False)
+                non_unesco = st.checkbox("Non-UNESCO", value=False)
                 st.markdown('</div>', unsafe_allow_html=True)
-            else:
-                st.info("No results found matching your search criteria.")
 
-    with tab2:
-        sites = get_all_heritage_sites()
+            elif search_type == "Art Forms":
+                col1, col2, col3 = st.columns(3)
 
-        # Create a single row with three columns for heading and filters
-        col1, col2, col3 = st.columns([2, 2, 1])
+                with st.container():
+                    with col1:
+                        art_category = st.selectbox(
+                            "Category",
+                            ["None", "Dance", "Painting", "Textile", "Theatre", "Ritual"],
+                            index=0
+                        )
 
-        with col1:
-            st.markdown(f"### Heritage Sites ({len(sites)})")
+                    with col2:
+                        origin_state = st.selectbox(
+                            "Origin State",
+                            ["None", "Kerala", "Uttar Pradesh", "Tamil Nadu", "Andhra Pradesh", "Odisha",
+                             "Manipur", "Assam", "Bihar", "West Bengal", "Maharashtra", "Punjab",
+                             "Madhya Pradesh", "Gujarat", "Karnataka", "Rajasthan"],
+                            index=0
+                        )
 
-        with col2:
-            # State filter dropdown
-            state_filter = st.selectbox(
-                "Filter by State",
-                ["All States", "Maharashtra", "Karnataka", "Tamil Nadu", "Rajasthan", "Uttar Pradesh",
-                 "Madhya Pradesh", "Odisha", "Delhi", "Gujarat", "Telangana", "West Bengal", "Assam"],
-                key="heritage_state_filter"
-            )
+                    with col3:
+                        risk_level = st.selectbox(
+                            "Risk Level",
+                            ["None", "Low", "Medium", "High"],
+                            index=0
+                        )
 
-        with col3:
-            # UNESCO status radio buttons
-            unesco_filter = st.radio(
-                "UNESCO Status",
-                ["All", "UNESCO", "Non-UNESCO"],
-                horizontal=True,
-                key="heritage_unesco_filter"
-            )
+            elif search_type == "Cultural Events":
+                col1, col2, col3 = st.columns(3)
 
-        # Apply filters
-        filtered_sites = sites
-        if state_filter != "All States":
-            filtered_sites = [site for site in filtered_sites if site.get('state') == state_filter]
+                with st.container():
+                    with col1:
+                        event_type = st.selectbox(
+                            "Event Type",
+                            ["None", "Dance Festival", "Music Festival", "Cultural Festival", "Eco Festival", "Wildlife Festival"],
+                            index=0
+                        )
 
-        if unesco_filter == "UNESCO":
-            filtered_sites = [site for site in filtered_sites if site['unesco_status']]
-        elif unesco_filter == "Non-UNESCO":
-            filtered_sites = [site for site in filtered_sites if not site['unesco_status']]
+                    with col2:
+                        location = st.selectbox(
+                            "Location",
+                            ["None", "Khajuraho", "Konark", "Aurangabad", "Mahabalipuram", "Pattadakal",
+                             "Delhi", "Mumbai", "Hampi", "Agra", "Sanchi", "Fatehpur Sikri", "Thanjavur",
+                             "Champaner", "Patan", "Mysore", "Madurai", "Guwahati", "Sundarbans", "Kaziranga"],
+                            index=0
+                        )
 
-        # Display filtered results
-        display_results_grid(filtered_sites, "Heritage Sites")
+                    with col3:
+                        organizer = st.selectbox(
+                            "Organizer",
+                            ["None", "MP Tourism", "Odisha Tourism", "Maharashtra Tourism", "Tamil Nadu Tourism",
+                             "Karnataka Tourism", "Delhi Tourism", "UP Tourism", "Gujarat Tourism", "Assam Tourism",
+                             "West Bengal Tourism"],
+                            index=0
+                        )
 
-    with tab3:
-        events = get_all_cultural_events()
+    # Search button
+    search_clicked = st.button("Search", key="search_button")
 
-        # Create a single row with three columns for heading and filters
-        col1, col2, col3 = st.columns([2, 2, 1])
+    if search_clicked:
+        # Check if search query is empty
+        if not search_query and not use_advanced_filters:
+            st.info("Please enter a search term or use advanced filters to search.")
+            return
 
-        with col1:
-            st.markdown(f"### Cultural Events ({len(events)})")
+        # Prepare filters dictionary
+        filters = {}
 
-        with col2:
-            # State filter dropdown
-            state_filter = st.selectbox(
-                "Filter by State",
-                ["All States", "Maharashtra", "Karnataka", "Tamil Nadu", "Rajasthan", "Uttar Pradesh",
-                 "Madhya Pradesh", "Odisha", "Delhi", "Gujarat", "Telangana", "West Bengal", "Assam"],
-                key="event_state_filter"
-            )
+        # Add search query if provided
+        if search_query:
+            filters['search_query'] = search_query
+            st.success(f"Searching for: {search_query}")
 
-        with col3:
-            # Event type filter dropdown
-            event_type_filter = st.selectbox(
-                "Event Type",
-                ["All Types", "Dance Festival", "Music Festival", "Cultural Festival", "Eco Festival", "Wildlife Festival"],
-                key="event_type_filter"
-            )
+        # Add advanced filters if enabled and selected
+        if search_type in ["Heritage Sites", "Art Forms", "Cultural Events"] and use_advanced_filters:
+            if search_type == "Heritage Sites":
+                if state != "None":
+                    filters['state'] = state
+                if heritage_type != "None":
+                    filters['type'] = [heritage_type]
+                if conservation_status != "None":
+                    filters['conservation_status'] = [conservation_status]
+                if risk_level != "None":
+                    filters['risk_level'] = [risk_level]
 
-        # Apply filters
-        filtered_events = events
-        if state_filter != "All States":
-            filtered_events = [event for event in filtered_events if get_state_from_city(event['location']) == state_filter]
+                # Handle UNESCO status filters
+                if unesco or non_unesco:
+                    if unesco and not non_unesco:
+                        filters['unesco_status'] = True
+                    elif non_unesco and not unesco:
+                        filters['unesco_status'] = False
 
-        if event_type_filter != "All Types":
-            filtered_events = [event for event in filtered_events if event['event_type'] == event_type_filter]
+                # Add year range filter
+                if from_year != 1000 or to_year != 2024:
+                    filters['year_range'] = [from_year, to_year]
 
-        # Display filtered results
-        display_results_grid(filtered_events, "Cultural Events")
+            elif search_type == "Art Forms":
+                if art_category != "None":
+                    filters['category'] = art_category
+                if origin_state != "None":
+                    filters['origin_state'] = origin_state
+                if risk_level != "None":
+                    filters['risk_level'] = risk_level
 
-    with tab4:
-        arts = get_all_art_forms()
+            elif search_type == "Cultural Events":
+                if event_type != "None":
+                    filters['event_type'] = event_type
+                if location != "None":
+                    filters['location'] = location
+                if organizer != "None":
+                    filters['organizer'] = organizer
 
-        # Create a single row with three columns for heading and filters
-        col1, col2, col3 = st.columns([2, 2, 1])
+        # Get search results based on search type
+        if search_type == "All":
+            results = {
+                'heritage_sites': get_heritage_sites(filters),
+                'art_forms': get_art_forms(filters),
+                'cultural_events': get_cultural_events(filters)
+            }
+        elif search_type == "Heritage Sites":
+            results = {'heritage_sites': get_heritage_sites(filters)}
+        elif search_type == "Art Forms":
+            results = {'art_forms': get_art_forms(filters)}
+        elif search_type == "Cultural Events":
+            results = {'cultural_events': get_cultural_events(filters)}
 
-        with col1:
-            st.markdown(f"### Art Forms ({len(arts)})")
+        # Display results
+        if any(results.values()):
+            # Calculate total results
+            total_results = sum(len(v) for v in results.values())
+            st.markdown(f"### Found {total_results} results")
+            st.markdown('<div class="search-results">', unsafe_allow_html=True)
 
-        with col2:
-            # State filter dropdown
-            state_filter = st.selectbox(
-                "Filter by State",
-                ["All States", "Kerala", "Uttar Pradesh", "Tamil Nadu", "Andhra Pradesh", "Odisha",
-                 "Manipur", "Assam", "Bihar", "West Bengal", "Maharashtra", "Punjab",
-                 "Madhya Pradesh", "Gujarat", "Karnataka", "Rajasthan"],
-                key="art_state_filter"
-            )
+            if 'heritage_sites' in results and results['heritage_sites']:
+                sites = results['heritage_sites']
+                st.markdown(f"### Heritage Sites ({len(sites)})")
+                display_results_grid(sites, "Heritage Sites")
 
-        with col3:
-            # Category filter dropdown
-            category_filter = st.selectbox(
-                "Category",
-                ["All Categories", "Dance", "Painting", "Textile", "Theatre", "Ritual"],
-                key="art_category_filter"
-            )
+            if 'art_forms' in results and results['art_forms']:
+                arts = results['art_forms']
+                st.markdown(f"### Art Forms ({len(arts)})")
+                display_results_grid(arts, "Art Forms")
 
-        # Apply filters
-        filtered_arts = arts
-        if state_filter != "All States":
-            filtered_arts = [art for art in filtered_arts if art['origin_state'] == state_filter]
+            if 'cultural_events' in results and results['cultural_events']:
+                events = results['cultural_events']
+                st.markdown(f"### Cultural Events ({len(events)})")
+                display_results_grid(events, "Cultural Events")
 
-        if category_filter != "All Categories":
-            filtered_arts = [art for art in filtered_arts if art['category'] == category_filter]
-
-        # Display filtered results
-        display_results_grid(filtered_arts, "Art Forms")
+            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.info("No results found matching your search criteria.")
 
     return search_query
