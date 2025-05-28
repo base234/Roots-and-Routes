@@ -223,6 +223,12 @@ def render_site_details():
                         st.image(img_url, use_container_width=True)
 
     with tab2:
+        # Initialize session state variables if they don't exist
+        if 'story_text' not in st.session_state:
+            st.session_state.story_text = ""
+        if 'story_displayed' not in st.session_state:
+            st.session_state.story_displayed = False
+
         # Textarea for user input
         user_input = st.text_area(
             "Enter additional details or information about the heritage site:",
@@ -231,67 +237,80 @@ def render_site_details():
         )
 
         st.markdown("**Note:** Your information will be added to the story wherever it is relevant. Useless or doesn't seems to align with what the site is about will be ignored.")
+
         # Generate button
         if st.button("Generate Story"):
             if user_input:
-                # Generate story
+                # Create a placeholder for streaming output
                 story_placeholder = st.empty()
                 story_text = ""
+
+                # Generate story with streaming display
                 for chunk in generate_user_custom_site_story(site, user_input):
                     story_text += chunk
                     story_placeholder.markdown(story_text)
 
-                # Download buttons
-                col1, col2 = st.columns(2)
-
-                with col1:
-                    # PDF download
-                    if st.button("Download as PDF"):
-                        pdf = FPDF()
-                        pdf.add_page()
-                        pdf.set_font("Arial", size=12)
-
-                        # Add title
-                        pdf.set_font("Arial", 'B', 16)
-                        pdf.cell(200, 10, txt=site['name'], ln=True, align='C')
-                        pdf.set_font("Arial", size=12)
-
-                        # Add story
-                        pdf.multi_cell(0, 10, txt=story_text)
-
-                        # Save to bytes
-                        pdf_bytes = pdf.output(dest='S').encode('latin-1')
-                        st.download_button(
-                            label="Click to download PDF",
-                            data=pdf_bytes,
-                            file_name=f"{site['name']}_story.pdf",
-                            mime="application/pdf"
-                        )
-
-                with col2:
-                    # DOCX download
-                    if st.button("Download as DOCX"):
-                        doc = docx.Document()
-
-                        # Add title
-                        doc.add_heading(site['name'], 0)
-
-                        # Add story
-                        doc.add_paragraph(story_text)
-
-                        # Save to bytes
-                        docx_bytes = io.BytesIO()
-                        doc.save(docx_bytes)
-                        docx_bytes.seek(0)
-
-                        st.download_button(
-                            label="Click to download DOCX",
-                            data=docx_bytes.getvalue(),
-                            file_name=f"{site['name']}_story.docx",
-                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                        )
+                # Store the generated story in session state
+                st.session_state.story_text = story_text
+                st.session_state.story_displayed = True
+                st.rerun()  # Rerun to show the story in the persistent display
             else:
                 st.warning("Please enter some information before generating the story.")
+
+        # Display the story if it exists in session state
+        if st.session_state.story_displayed and st.session_state.story_text:
+            st.markdown("### Generated Story")
+            st.markdown(st.session_state.story_text)
+
+        # Download buttons - only show if we have a story
+        if st.session_state.story_text:
+            st.markdown("### Download Options")
+            col1, col2 = st.columns(2)
+
+            with col1:
+                # PDF download
+                pdf = FPDF()
+                pdf.add_page()
+                pdf.set_font("Arial", size=12)
+
+                # Add title
+                pdf.set_font("Arial", 'B', 16)
+                pdf.cell(200, 10, txt=site['name'], ln=True, align='C')
+                pdf.set_font("Arial", size=12)
+
+                # Add story
+                pdf.multi_cell(0, 10, txt=st.session_state.story_text)
+
+                # Save to bytes
+                pdf_bytes = pdf.output(dest='S').encode('latin-1')
+                st.download_button(
+                    label="Download as PDF",
+                    data=pdf_bytes,
+                    file_name=f"{site['name']}_story.pdf",
+                    mime="application/pdf"
+                )
+
+            with col2:
+                # DOCX download
+                doc = docx.Document()
+
+                # Add title
+                doc.add_heading(site['name'], 0)
+
+                # Add story
+                doc.add_paragraph(st.session_state.story_text)
+
+                # Save to bytes
+                docx_bytes = io.BytesIO()
+                doc.save(docx_bytes)
+                docx_bytes.seek(0)
+
+                st.download_button(
+                    label="Download as DOCX",
+                    data=docx_bytes.getvalue(),
+                    file_name=f"{site['name']}_story.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                )
 
 if __name__ == "__main__":
     render_site_details()
