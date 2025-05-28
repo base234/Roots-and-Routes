@@ -53,11 +53,16 @@ def render_trending():
         .read-more-link:hover {
             text-decoration: underline;
         }
-        .trending-image {
-            width: 250px;
+        div[data-testid="stImage"] {
+            width: 100%;
             height: 200px;
             object-fit: cover;
-            border-radius: 8px;
+            margin: 0;
+        }
+        div[data-testid="stImage"] img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -74,9 +79,9 @@ def render_trending():
                     # Use Unsplash API to get a relevant image
                     image_url = get_site_image(site['name'])
                     if image_url:
-                        st.markdown(f'<img src="{image_url}" class="trending-image">', unsafe_allow_html=True)
+                        st.image(image_url, use_container_width=True)
                     else:
-                        st.markdown('<img src="https://via.placeholder.com/400x300?text=No+Image+Available" class="trending-image">', unsafe_allow_html=True)
+                        st.image("https://via.placeholder.com/400x200?text=No+Image", use_container_width=True)
                     st.markdown(f"#### {site['name']}")
                     st.markdown(f"*{site['location']}, {site['state']}*")
                     st.markdown(f"**Visitors:** {site['total_visitors']:,}")
