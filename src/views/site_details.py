@@ -76,7 +76,7 @@ def render_site_details():
     st.markdown(f"## {site['name']}")
 
     # Create tabs
-    tab1, tab2 = st.tabs(["Details", "Create Custom Story"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Details", "Statistics", "Reviews", "Create Custom Story"])
 
     with tab1:
         # Get images from Unsplash
@@ -157,8 +157,22 @@ def render_site_details():
             with col2:
                 st.image(images[6], use_container_width=True)
 
-        # Rest of the existing content for the Details tab
+        # Additional image galleries
         st.markdown("---")
+        st.subheader("More related photos")
+
+        # Get more images for the additional galleries
+        more_images = get_site_images(site['name'], count=20)
+
+        if more_images:
+            # Display images in rows of 4
+            for i in range(0, 20, 4):
+                cols = st.columns(4)
+                for idx, img_url in enumerate(more_images[i:i+4]):
+                    with cols[idx]:
+                        st.image(img_url, use_container_width=True)
+
+    with tab2:
         # Get visitor statistics
         stats_query = """
         SELECT * FROM VISITOR_STATS
@@ -174,18 +188,32 @@ def render_site_details():
             ])
             df_stats['visit_date'] = pd.to_datetime(df_stats['visit_date'])
 
-            # Fourth row: Daily visitors count
+            # Summary statistics
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Total Visitors", f"{df_stats['visitors'].sum():,}")
+            with col2:
+                st.metric("Total Revenue", f"₹{df_stats['revenue'].sum():,.2f}")
+            with col3:
+                st.metric("Average Daily Visitors", f"{df_stats['visitors'].mean():.1f}")
+
+            st.markdown("---")
+
+            # Daily visitors count
             fig_visitors = px.line(df_stats, x='visit_date', y='visitors',
-                                 title='Daily Visitor Count')
+                                 title='Daily Visitor Count',
+                                 labels={'visit_date': 'Date', 'visitors': 'Number of Visitors'})
             st.plotly_chart(fig_visitors, use_container_width=True)
 
-            # Fifth row: Daily revenue
+            # Daily revenue
             fig_revenue = px.line(df_stats, x='visit_date', y='revenue',
-                                title='Daily Revenue')
+                                title='Daily Revenue',
+                                labels={'visit_date': 'Date', 'revenue': 'Revenue (₹)'})
             st.plotly_chart(fig_revenue, use_container_width=True)
+        else:
+            st.info("No visitor statistics available for this site.")
 
-        # Sixth row: Visitor Reviews and Interactions
-        st.header("Visitor Reviews & Interactions")
+    with tab3:
         try:
             # Get user interactions
             interactions_query = """
@@ -220,22 +248,7 @@ def render_site_details():
         except Exception as e:
             st.info("Visitor interactions feature is not available at the moment.")
 
-        # Additional image galleries
-        st.markdown("---")
-        st.subheader("More related photos")
-
-        # Get more images for the additional galleries
-        more_images = get_site_images(site['name'], count=20)
-
-        if more_images:
-            # Display images in rows of 4
-            for i in range(0, 20, 4):
-                cols = st.columns(4)
-                for idx, img_url in enumerate(more_images[i:i+4]):
-                    with cols[idx]:
-                        st.image(img_url, use_container_width=True)
-
-    with tab2:
+    with tab4:
         # Initialize session state variables if they don't exist
         if 'story_text' not in st.session_state:
             st.session_state.story_text = ""
@@ -345,6 +358,7 @@ def render_site_details():
                         file_name=f"{site['name']}_story.docx",
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     )
+
 
 if __name__ == "__main__":
     render_site_details()
