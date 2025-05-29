@@ -235,10 +235,12 @@ def render_site_details():
                     row_reviews = df_interactions.iloc[i:i+3]
                     for idx, (_, interaction) in enumerate(row_reviews.iterrows()):
                         with cols[idx]:
+                            # Format the date and time
+                            formatted_date = pd.to_datetime(interaction['interaction_date']).strftime('%d %B, %Y at %I:%M %p')
                             st.markdown(f"""
                             <div style='background-color: #f0f2f6; padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0; height: 100%;'>
                                 <h4 style='margin: 0 0 0.5rem 0;'>{interaction['user_id']}</h4>
-                                <p style='color: #666; margin: 0 0 0.5rem 0; font-size: 0.9rem;'>{interaction['interaction_date']}</p>
+                                <p style='color: #666; margin: 0 0 0.5rem 0; font-size: 0.9rem;'>{formatted_date}</p>
                                 <p style='margin: 0 0 0.5rem 0;'><strong>{interaction['interaction_type']}</strong> • {'⭐' * int(interaction['rating'])}</p>
                                 <p style='margin: 0;'>{interaction['review']}</p>
                             </div>
