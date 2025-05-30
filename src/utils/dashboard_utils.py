@@ -80,13 +80,17 @@ class DashboardUtils:
     def get_visitor_trends(self, months=12):
         """Get visitor trends over time."""
         query = """
+        WITH last_available_date AS (
+            SELECT MAX(visit_date) as max_date
+            FROM ROOTS_ROUTES.PUBLIC.VISITOR_STATS
+        )
         SELECT
             DATE_TRUNC('month', visit_date) as month,
             COALESCE(SUM(visitor_count), 0) as total_visitors,
             COALESCE(SUM(revenue), 0) as total_revenue
-        FROM VISITOR_STATS
-        WHERE visit_date >= DATEADD(month, -%s, CURRENT_DATE())
-        GROUP BY month
+        FROM ROOTS_ROUTES.PUBLIC.VISITOR_STATS, last_available_date
+        WHERE visit_date >= DATEADD(month, -%s, max_date)
+        GROUP BY DATE_TRUNC('month', visit_date)
         ORDER BY month ASC
         """
         result = self.sf.execute_query(query, [months])
@@ -95,7 +99,17 @@ class DashboardUtils:
         if result is None or len(result) == 0:
             return []
 
-        return result
+        # Convert the result to a list of dictionaries
+        trends = []
+        for row in result:
+            trend = {
+                'month': row[0],
+                'total_visitors': row[1] or 0,
+                'total_revenue': row[2] or 0
+            }
+            trends.append(trend)
+
+        return trends
 
     def get_heritage_type_distribution(self):
         """Get distribution of heritage sites by type."""
@@ -168,10 +182,14 @@ class DashboardUtils:
             st.warning("No visitor trend data available")
             return None
 
-        df = pd.DataFrame(data, columns=['month', 'total_visitors', 'total_revenue'])
+        # Convert data to DataFrame
+        df = pd.DataFrame(data)
 
         # Convert month to datetime if it's not already
         df['month'] = pd.to_datetime(df['month'])
+
+        # Format the month for display
+        df['month_display'] = df['month'].dt.strftime('%b %Y')
 
         fig = go.Figure()
 
@@ -180,7 +198,8 @@ class DashboardUtils:
             x=df['month'],
             y=df['total_visitors'],
             name='Visitors',
-            line=dict(color='#1f77b4')
+            line=dict(color='#1f77b4', width=2),
+            hovertemplate='%{x|%b %Y}<br>Visitors: %{y:,.0f}<extra></extra>'
         ))
 
         # Add revenue line
@@ -188,8 +207,9 @@ class DashboardUtils:
             x=df['month'],
             y=df['total_revenue'],
             name='Revenue',
-            line=dict(color='#2ca02c'),
-            yaxis='y2'
+            line=dict(color='#2ca02c', width=2),
+            yaxis='y2',
+            hovertemplate='%{x|%b %Y}<br>Revenue: ₹%{y:,.0f}<extra></extra>'
         ))
 
         # Update layout
@@ -203,7 +223,15 @@ class DashboardUtils:
                 side='right'
             ),
             hovermode='x unified',
-            showlegend=True
+            showlegend=True,
+            legend=dict(
+                orientation='h',
+                yanchor='bottom',
+                y=1.02,
+                xanchor='right',
+                x=1
+            ),
+            margin=dict(t=50, b=50, l=50, r=50)
         )
 
         return fig

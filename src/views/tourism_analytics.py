@@ -102,7 +102,7 @@ def render_overview_tab(df):
     # Format numbers
     display_df['Total Visitors'] = display_df['Total Visitors'].map('{:,.0f}'.format)
     display_df['Total Revenue (₹)'] = display_df['Total Revenue (₹)'].map('₹{:,.0f}'.format)
-    display_df['Avg Daily Visitors'] = display_df['Avg Daily Visitors'].map('{:,.0f}'.format)
+    display_df['Avg Daily Visitors'] = display_df['Avg Daily Visitors'].fillna(0).map('{:,.0f}'.format)
 
     st.dataframe(display_df, use_container_width=True)
 
@@ -188,10 +188,15 @@ def render_economic_impact_tab(df):
 
     # Revenue per visitor analysis
     st.subheader("Revenue per Visitor Analysis")
-    df['revenue_per_visitor'] = df['total_revenue'] / df['total_visitors']
+
+    # Handle null values in the data
+    df_clean = df.copy()
+    df_clean['total_revenue'] = df_clean['total_revenue'].fillna(0)
+    df_clean['total_visitors'] = df_clean['total_visitors'].fillna(0)
+    df_clean['revenue_per_visitor'] = df_clean['total_revenue'] / df_clean['total_visitors'].replace(0, 1)  # Avoid division by zero
 
     fig_rpv = px.scatter(
-        df,
+        df_clean,
         x='total_visitors',
         y='revenue_per_visitor',
         color='heritage_type',

@@ -121,7 +121,8 @@ def get_site_observations(site_data, health_data, potential_data, seasonality_da
     observations = []
 
     # Check visitor patterns
-    if site_data['Average Visitors'] < 100:
+    avg_visitors = site_data.get('Average Visitors', 0)
+    if avg_visitors is not None and avg_visitors < 100:
         observations.append({
             'issue': 'Low Visitor Count',
             'reason': 'The site has significantly lower visitor numbers compared to other heritage sites.',
@@ -129,7 +130,8 @@ def get_site_observations(site_data, health_data, potential_data, seasonality_da
         })
 
     # Check health score
-    if health_data['overall_health_score'] < 0.5:
+    health_score = health_data.get('overall_health_score', 1.0)
+    if health_score is not None and health_score < 0.5:
         observations.append({
             'issue': 'Poor Health Score',
             'reason': 'The site shows signs of deterioration or lack of maintenance.',
@@ -137,7 +139,8 @@ def get_site_observations(site_data, health_data, potential_data, seasonality_da
         })
 
     # Check tourism potential
-    if potential_data['overall_potential_score'] < 0.4:
+    potential_score = potential_data.get('overall_potential_score', 1.0)
+    if potential_score is not None and potential_score < 0.4:
         observations.append({
             'issue': 'Low Tourism Potential',
             'reason': 'The site has untapped potential for tourism development.',
@@ -145,7 +148,8 @@ def get_site_observations(site_data, health_data, potential_data, seasonality_da
         })
 
     # Check seasonality
-    if len(seasonality_data['peak_seasons']) < 2:
+    peak_seasons = seasonality_data.get('peak_seasons', [])
+    if peak_seasons is not None and len(peak_seasons) < 2:
         observations.append({
             'issue': 'Limited Peak Seasons',
             'reason': 'Visitor numbers are concentrated in few seasons.',
@@ -153,11 +157,20 @@ def get_site_observations(site_data, health_data, potential_data, seasonality_da
         })
 
     # Check preservation needs
-    if priority_data['risk_assessment_score'] > 0.7:
+    risk_score = priority_data.get('risk_assessment_score', 0.0)
+    if risk_score is not None and risk_score > 0.7:
         observations.append({
             'issue': 'High Preservation Risk',
             'reason': 'The site requires immediate attention for preservation.',
             'solution': 'Implement emergency preservation measures and secure funding.'
+        })
+
+    # If no observations were generated, add a default positive observation
+    if not observations:
+        observations.append({
+            'issue': 'Good Overall Status',
+            'reason': 'The site is performing well across all key metrics.',
+            'solution': 'Continue current management practices and regular monitoring.'
         })
 
     return observations
