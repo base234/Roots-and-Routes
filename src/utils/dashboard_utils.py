@@ -42,18 +42,22 @@ class DashboardUtils:
     def get_trending_sites(self, limit=5):
         """Get trending heritage sites based on visitor count and ratings."""
         query = """
-        SELECT
-            h.name,
-            h.location,
-            h.state,
-            COUNT(DISTINCT v.visit_date) as visit_days,
-            SUM(v.visitor_count) as total_visitors,
-            AVG(u.rating) as avg_rating
-        FROM HERITAGE_SITES h
-        LEFT JOIN VISITOR_STATS v ON h.site_id = v.site_id
-        LEFT JOIN USER_INTERACTIONS u ON h.site_id = u.site_id
-        GROUP BY h.name, h.location, h.state
-        ORDER BY total_visitors DESC, avg_rating DESC
+        WITH site_metrics AS (
+            SELECT
+                h.name,
+                h.location,
+                h.state,
+                COUNT(DISTINCT v.visit_date) as visit_days,
+                COALESCE(SUM(v.visitor_count), 0) as total_visitors,
+                COALESCE(AVG(u.rating), 0) as avg_rating
+            FROM HERITAGE_SITES h
+            LEFT JOIN VISITOR_STATS v ON h.site_id = v.site_id
+            LEFT JOIN USER_INTERACTIONS u ON h.site_id = u.site_id
+            GROUP BY h.name, h.location, h.state
+        )
+        SELECT *
+        FROM site_metrics
+        ORDER BY total_visitors DESC NULLS LAST, avg_rating DESC NULLS LAST
         LIMIT %s
         """
         result = self.sf.execute_query(query, [limit])

@@ -68,7 +68,7 @@ def render_metrics_overview():
                     st.markdown(f"### {site['name']}")
                     st.markdown(f"**{site['location']}, {site['state']}**")
                 with col2:
-                    st.metric("Visitors", f"{site['total_visitors']:,}")
+                    st.metric("Total Visitors", f"{site['total_visitors']:,}")
                     st.metric("Rating", f"{site['avg_rating']:.1f} ⭐")
                 st.divider()
     else:
