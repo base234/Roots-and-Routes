@@ -101,6 +101,11 @@ Roots and Routes is an innovative digital platform dedicated to preserving and p
 
 ## Getting Started
 
+## First, you need to setup the database
+Run the files located `src/database/SNOWFLAKE_SETUP` in order given below:
+1. `01 Initial DB Setup.sql`
+2. `03 Sample Data.sql`
+
 ## Clone the repository
 ```
 git clone https://github.com/base234/Roots-and-Routes
