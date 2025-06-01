@@ -15,6 +15,7 @@ from src.views.tourism_analytics import render_tourism_analytics
 from src.views.heritage_sites import render_heritage_sites_page
 from src.views.cultural_events import render_cultural_events_page
 from src.views.art_forms import render_art_forms_page
+from src.views.data_update import render_data_upload
 
 # Set page configuration
 st.set_page_config(
@@ -65,6 +66,8 @@ if st.sidebar.button("Tourism Analytics", key="tourism_analytics_button"):
     st.session_state['current_view'] = 'tourism_analytics'
 if st.sidebar.button("AI Insights", key="ai_insights_button"):
     st.session_state['current_view'] = 'ai_insights'
+if st.sidebar.button("Data Update", key="data_upload_button"):
+    st.session_state['current_view'] = 'data_upload'
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("Built with ❤️ for Cultural Heritage")
@@ -108,5 +111,7 @@ elif current_view == 'cultural_events':
     render_cultural_events_page()
 elif current_view == 'art_forms':
     render_art_forms_page()
+elif current_view == 'data_upload':
+    render_data_upload()
 
 render_footer()
