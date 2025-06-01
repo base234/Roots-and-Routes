@@ -4,6 +4,10 @@ Roots and Routes is an innovative digital platform dedicated to preserving and p
 
 ## Key Features
 
+### Storytelling
+- Generate personalized stories for heritage sites
+- Create custom stories using AI by adding details by the user.
+
 ### AI Insights
 - Identify heritage sites with least visitors trends
 - Identify heritage sites with high visitors trends
@@ -43,6 +47,11 @@ Roots and Routes is an innovative digital platform dedicated to preserving and p
 - Heritage type distribution and State wise distribution
 - Trending Heritage Sites
 
+### Update Data
+- Add new or update exisiting data using form
+- by uploading csv or excel sheets
+- Data will be automatically ingested into the database by AI
+
 ## Screenshots
 
 <table>
@@ -80,7 +89,7 @@ Roots and Routes is an innovative digital platform dedicated to preserving and p
 </tr>
 <tr>
 <td><img src="screenshots/17.png" alt="Screenshot 17" width="100%"></td>
-<td></td>
+<td><img src="screenshots/18.png" alt="Screenshot 16" width="100%"></td>
 </tr>
 </table>
 
