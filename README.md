@@ -8,6 +8,11 @@ Roots and Routes is an innovative digital platform dedicated to preserving and p
 - Generate personalized stories for heritage sites
 - Create custom stories using AI by adding details by the user.
 
+### Realtime data update by setting up Snowpipe
+- Add new or update exisiting data using form
+- by uploading csv or excel sheets
+- Data will be automatically ingested into the database by AI
+
 ### AI Insights
 - Identify heritage sites with least visitors trends
 - Identify heritage sites with high visitors trends
@@ -46,11 +51,6 @@ Roots and Routes is an innovative digital platform dedicated to preserving and p
 - Visitor Trends Graph
 - Heritage type distribution and State wise distribution
 - Trending Heritage Sites
-
-### Update Data
-- Add new or update exisiting data using form
-- by uploading csv or excel sheets
-- Data will be automatically ingested into the database by AI
 
 ## Screenshots
 
